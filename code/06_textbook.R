@@ -14,7 +14,12 @@ suppressPackageStartupMessages({
   library(Matrix)
 })
 
-sp <- readRDS("data/sp_results.rds")
+# 仓库根目录：优先环境变量 PROJ_ROOT，其次当前工作目录（应在仓库根），最后回退本机默认路径
+root <- Sys.getenv("PROJ_ROOT", unset = getwd())
+if (!file.exists(file.path(root, "code", "dea_fun.R"))) root <- "D:/AI/随机过程大作业2"
+setwd(root)
+
+sp <- readRDS(file.path(root, "data", "sp_results.rds"))
 d  <- sp$dat
 cc <- sp$c_scale
 K  <- 5
@@ -178,6 +183,6 @@ cat("\n=== 5. Itô 闭式解与方差（Ch8） ===\n")
 print(var_tab, digits = 4)
 sink()
 
-write.csv(spec_tab, "data/textbook_table.csv", row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(spec_tab, file.path(root, "data", "textbook_table.csv"), row.names = FALSE, fileEncoding = "UTF-8")
 cat("textbook checks done\n")
 

@@ -1,7 +1,9 @@
 ###############################################################################
 # 04_figures.R —— 论文插图（PNG, 300 dpi）
 ###############################################################################
-root <- "C:/Users/Lenovo/Desktop/随机过程大作业_学习策略推荐"
+# 仓库根目录：优先环境变量 PROJ_ROOT，其次当前工作目录（应在仓库根），最后回退本机默认路径
+root <- Sys.getenv("PROJ_ROOT", unset = getwd())
+if (!file.exists(file.path(root, "code", "dea_fun.R"))) root <- "D:/AI/随机过程大作业2"
 setwd(root)
 suppressPackageStartupMessages({library(showtext); library(Matrix)})
 showtext_auto(); showtext_opts(dpi = 300)
