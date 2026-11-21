@@ -81,9 +81,10 @@
   .stat .v{font-size:20px;font-weight:750;margin-top:2px;font-variant-numeric:tabular-nums}
   .hint{color:var(--dim2);font-size:12.5px;margin-top:14px}
   /* heatmap */
-  .heat{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;max-width:430px}
+  .heat{display:grid;grid-template-columns:52px repeat(5,1fr);gap:4px;max-width:470px}
   .cell{aspect-ratio:1;border-radius:7px;display:flex;align-items:center;justify-content:center;
     font-family:var(--mono);font-size:11px;color:#eaf1ff;border:1px solid rgba(255,255,255,.05)}
+  .cell.lab{background:none;border:0;color:#6d7da2;font-size:11px;justify-content:center;aspect-ratio:auto}
   .heat-lab{display:flex;justify-content:space-between;font-size:11px;color:var(--dim2);margin-top:6px}
   /* reproduce strip */
   .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
@@ -138,7 +139,7 @@
 <section>
   <div class="wrap">
     <div class="head"><span class="no">02 / INTERVENE</span><h2>动作实验室：改一个旋钮，重估 519 个人</h2></div>
-    <p class="lead">选一种动作、给一个每周学时，页面会用协变量系数 δ 把 519 位学生的标准化协变量整体平移，重算每个人的 ρ，再聚合成五层强度比与 16 周转移矩阵。</p>
+    <p class="lead">选一种动作、给一个每周学时，页面会用协变量系数 δ 把 519 位学生的标准化协变量整体平移，重算每个人的 ρ，再聚合成五层强度比与转移矩阵（时间跨度可切 1 / 4 / 8 / 16 周）。</p>
     <div class="card">
       <div class="ctlrow">
         <div class="ctl"><label>动作</label><select id="actSel"></select></div>
@@ -149,9 +150,15 @@
       <div class="split">
         <div id="actRails"></div>
         <div>
-          <div style="font-size:13px;color:var(--dim);margin-bottom:8px">16 周转移矩阵 P(16)，行=起点、列=终点</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="font-size:13px;color:var(--dim)">转移矩阵 P(<span id="hzTxt">16</span> 周)</div>
+            <div class="seg" id="hzSeg">
+              <button data-h="1">1 周</button><button data-h="4">4 周</button>
+              <button data-h="8">8 周</button><button data-h="16" class="on">16 周</button>
+            </div>
+          </div>
           <div class="heat" id="heat"></div>
-          <div class="heat-lab"><span>第 1 层（最高效）</span><span>第 5 层（最低效）</span></div>
+          <div class="heat-lab"><span>行 = 起点层级</span><span>列 = 终点层级（左→右：第 1→5 层）</span></div>
         </div>
       </div>
       <div class="stats" id="actStats"></div>
@@ -282,9 +289,9 @@ function drawEvo(){
   const start = evoStart, rv = evoScenario === "opt" ? D.rho.layer_mean_opt : D.rho.layer_mean;
   const xs = []; for(let t=0;t<=16.001;t+=0.5) xs.push(t);
   const series = [0,1,2,3,4].map(k=>({k, pts: xs.map(t=>[t, pt(rv,t,start)[k]])}));
-  const W=560,H=300, x0=44, y0=16, w=486, hh=236, ymax=0.7;
+  const W=560,H=300, x0=44, y0=16, w=486, hh=236, ymax=1.0;
   let out = `<rect x="${x0}" y="${y0}" width="${w}" height="${hh}" fill="#0b1426" stroke="#1d2a46"/>`;
-  for(let g=0;g<=0.7;g+=0.1){
+  for(let g=0;g<=1.001;g+=0.2){
     const y = y0 + hh - (g/ymax)*hh;
     out += `<line x1="${x0}" y1="${y}" x2="${x0+w}" y2="${y}" stroke="#18223a"/>`;
     out += `<text x="${x0-8}" y="${y+4}" fill="#6d7da2" font-size="10" text-anchor="end" font-family="monospace">${g.toFixed(1)}</text>`;
@@ -352,7 +359,7 @@ renderEvo();
 const actSel = document.getElementById("actSel");
 actSel.innerHTML = ACT.map((a,i)=>`<option value="${i}">${a.name}（建议 ${a.hours} h/周）</option>`).join("");
 actSel.value = 4;
-let actIdx = 4, actH = 1.5;
+let actIdx = 4, actH = 1.5, hz = 16;
 const posOf = r => Math.max(0, Math.min(100, ((r-0.4)/1.2)*100));
 function renderAct(){
   const dz = ACT[actIdx].dz;
@@ -363,26 +370,34 @@ function renderAct(){
         <span class="base" style="left:${posOf(layerMeanBase[i])}%;background:${COLORS[i]}"></span>
         <span class="mark" style="left:${posOf(r)}%;background:${COLORS[i]};box-shadow:0 0 12px ${COLORS[i]}"></span></span>
       <span class="pc">${fmt(r,3)}</span></div>`).join("");
-  // 热图：以第 5 层为起点的整条 P(16) 也给出 5 行
+  // 热图：五行五列，行=起点，列=终点（时间跨度可选）
   let cells = "";
   for(let i=0;i<5;i++){
-    const p = pt(rv,16,i);
+    const p = pt(rv, hz, i);
+    cells += `<div class="cell lab">${i+1}</div>`;
     for(let j=0;j<5;j++){
-      const v = p[j], a = Math.min(1, 0.12 + v*1.6);
+      const v = p[j], a = Math.min(1, 0.10 + v*1.7);
       cells += `<div class="cell" title="从第 ${i+1} 层到第 ${j+1} 层：${(v*100).toFixed(1)}%"
         style="background:rgba(108,146,255,${a.toFixed(2)})">${(v*100).toFixed(0)}</div>`;
     }
   }
   document.getElementById("heat").innerHTML = cells;
-  const p5 = pt(rv,16,4);
+  document.getElementById("hzTxt").textContent = hz;
+  const p5 = pt(rv,hz,4);
   const meanR = rv.reduce((a,b)=>a+b,0)/5;
   const dRho = rv.map((r,i)=>r-layerMeanBase[i]);
   document.getElementById("actStats").innerHTML = `
     <div class="stat"><div class="k">五层平均 ρ</div><div class="v">${fmt(meanR,3)} <span style="font-size:12px;color:var(--dim)">基线 ${fmt(layerMeanBase.reduce((a,b)=>a+b,0)/5,3)}</span></div></div>
-    <div class="stat"><div class="k">第 5 层 16 周跃层</div><div class="v">${(upProb(p5,4)*100).toFixed(1)}%</div></div>
-    <div class="stat"><div class="k">第 5 层期望效率</div><div class="v">${fmt(expEff(p5),4)}</div></div>
+    <div class="stat"><div class="k">第 5 层 ${hz} 周跃层</div><div class="v">${(upProb(p5,4)*100).toFixed(1)}%</div></div>
+    <div class="stat"><div class="k">第 5 层 ${hz} 周期望效率</div><div class="v">${fmt(expEff(p5),4)}</div></div>
     <div class="stat"><div class="k">ρ 增量（1→5 层）</div><div class="v" style="font-size:15px">${dRho.map(x=>(x>=0?"+":"")+fmt(x,2)).join(" · ")}</div></div>`;
 }
+document.getElementById("hzSeg").addEventListener("click", e=>{
+  if(e.target.tagName!=="BUTTON") return;
+  hz = +e.target.dataset.h;
+  [...e.currentTarget.children].forEach(b=>b.classList.toggle("on", b===e.target));
+  renderAct();
+});
 actSel.addEventListener("change", e=>{ actIdx = +e.target.value; renderAct(); });
 document.getElementById("hRange").addEventListener("input", e=>{
   actH = +e.target.value;
@@ -493,6 +508,9 @@ document.getElementById("strip").innerHTML = ["01 数据重建","02 CHPI 复现"
 </script>
 </body>
 </html>
+
+
+
 
 
 
