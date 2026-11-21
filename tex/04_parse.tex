@@ -1,0 +1,284 @@
+% =============================================================================
+%  三、问题求解（一）：原文解析
+% =============================================================================
+\section{问题求解}
+
+\subsection{原文解析：把论文拆成一条可检验的证据链}
+
+读一篇方法论文，最容易犯的错误是“顺着作者的叙述读”，因为叙述顺序往往按
+“动机—方法—结果”组织，而不是按“输入—变换—输出”组织。要判断一篇论文能
+不能被复现，必须把它拆成一条链：每一个环节吃进什么、吐出什么、用什么数学
+工具完成变换、留下了哪些自由度。按这一标准，原文可拆为五个环节（表
+\ref{tab:chain}）。
+
+\begin{table}[htbp]
+\centering
+\tabfont
+\caption{原文的五环证据链及其数学工具}
+\label{tab:chain}
+\begin{tabularx}{\textwidth}{@{}p{1.0cm}p{2.4cm}Xp{4.3cm}@{}}
+\toprule
+环节 & 名称 & 变换（输入 $\to$ 输出） & 数学工具 \\
+\midrule
+1 & 复合量化 & 14 个异质题项的作答 $\to$
+  4 维投入 $\bx_i$ 与产出 $y_i$ & 累积百分比法、经验分布函数、
+  加权合成 \\
+2 & 本体聚类 & $(\bx_i,y_i)$ $\to$ 类别标签 $c_i\in\{1,\dots,5\}$ &
+  Gower 距离、PAM（$k$-medoids） \\
+3 & 类内评价 & 类内样本 $\to$ 效率 $\theta_i\in(0,1]$ &
+  投入导向 CCR-DEA、$\varepsilon$ 松弛 \\
+4 & 层级分解 & $\theta_i$ $\to$ 层号 $S_i\in\{1,\dots,5\}$ &
+  context-dependent DEA（剔除式） \\
+5 & 准则与路径 & 层号 $\to$ 三准则与参考路径 &
+  产出导向 DEA、$L_1$ 距离、贪心拼接 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+这条链的信息流是单向的：环节 1 的量化口径决定环节 3 的效率，环节 3 的效率
+决定环节 4 的层级，环节 4 的层级决定环节 5 的路径。因此\textbf{链上任何一
+环的口径变化都会沿着链条放大}。这也是复现工作的难点：即使算法完全正确，只
+要量化口径不同，最终的路径就会不同。下面逐环给出数学表述。
+
+\subsubsection{环节 1：复合量化}
+
+设第 $j$ 题有 $K_j$ 个取值档（有序题 $K_j=5$，计数题 $K_j=13$，时长题按
+小时离散），第 $k$ 档的样本比例为 $p_{jk}$，累计比例为
+$F_{jk}=\sum_{m\le k}p_{jm}$。原文的“累积百分比法”可写成
+\begin{equation}
+s_{ij}=100\Bigl[1-F_{j,r_{ij}}+\tfrac12 p_{j,r_{ij}}\Bigr],
+\label{eq:quant}
+\end{equation}
+即“优于该档的人数比例”加上“同档人数的一半”，等价于用分位中点作为该档的
+代表分位。这样处理的好处是：无论题型如何，得分都落在 $[0,100]$ 且分布近似
+均匀，从而消除量纲差异；代价是把原始作答的绝对信息（例如“每天背 3 小时”
+与“每天背 4 小时”的差别）压缩成了相对位次。
+
+对计数与时长题，原文改用经验分布函数映射。本文复现时对时长先作
+$\log(1+t)$ 变换再取秩，以抑制长尾（少数学生每天投入 8 小时以上会拉开过大
+差距）。合成规则为四项投入的组内平均：
+\begin{equation}
+\begin{aligned}
+x_{i1}&=\tfrac14\bigl(s_{\mathrm{rec}}+s_{\mathrm{lis}}+s_{\mathrm{spk}}+s_{\mathrm{rd}}\bigr),\\
+x_{i2}&=\tfrac12\bigl(s_{\mathrm{exm}}+s_{\mathrm{mck}}\bigr),\qquad
+x_{i3}=\tfrac13\bigl(s_{\mathrm{rev}}+s_{\mathrm{tut}}+s_{\mathrm{ext}}\bigr),\\
+x_{i4}&=\tfrac12\bigl(s_{\mathrm{men}}+s_{\mathrm{rst}}\bigr),
+\end{aligned}
+\label{eq:composite}
+\end{equation}
+产出 $y_i$ 为期末成绩（0—100）。
+
+原文另设一条“信息量判据”：若某题项的量化得分方差
+$\sigma_j^2=\frac1n\sum_i(s_{ij}-\bar s_j)^2<10$，则认为该题区分度不足，
+需要重赋权。这一判据在数学上等价于要求标准差大于 3.16 分（百分制），用意
+可以理解，但阈值缺乏推导；本文复现时保留该判据作为诊断，并在触发时改用潜
+变量秩重映射，以保证该题仍然携带排序信息。
+
+\subsubsection{环节 2：Gower 距离与 PAM 聚类}
+
+14 个题项混合了有序、计数与连续三种类型，欧氏距离不适用。Gower 距离把每
+一维的差异归一到 $[0,1]$ 后加权平均\refs{4}：
+\begin{equation}
+\begin{aligned}
+d(i,i')&=\frac{\sum_{j=1}^{p}w_j\,\delta_{j}(i,i')\,d_j(i,i')}
+{\sum_{j=1}^{p}w_j\,\delta_j(i,i')},\\
+d_j(i,i')&=\frac{|s_{ij}-s_{i'j}|}{\max_{i''}s_{i''j}-\min_{i''}s_{i''j}},
+\end{aligned}
+\label{eq:gower}
+\end{equation}
+其中 $\delta_j\in\{0,1\}$ 表示该维是否可比（缺失时取 0）。聚类采用 PAM，
+即在小样本下比 $k$-means 更稳健的 $k$-medoids 方法\refs{5}：它不要求均值
+存在，直接用“中心点”作为类的代表，最小化
+\begin{equation}
+W(\mathcal{M})=\sum_{i=1}^{n}\min_{m\in\mathcal{M}}d(i,m),
+\qquad \mathcal{M}\subset\{1,\dots,n\},\ |\mathcal{M}|=k .
+\label{eq:pam}
+\end{equation}
+算法上分 BUILD 与 SWAP 两步（算法 1）。
+
+\begin{center}
+\fbox{\parbox{0.93\textwidth}{
+\tabfont
+\textbf{算法 1}\ \ PAM 聚类的 BUILD--SWAP 过程\\[2pt]
+\textbf{输入：}距离矩阵 $D=(d(i,i'))$，类数 $k$\\
+\textbf{输出：}中心点集合 $\mathcal{M}$ 与标签 $c_i$\\
+1.\ BUILD：取使 $\sum_{i'}d(i,i')$ 最小的点为首个中心；\\
+2.\ 重复至 $|\mathcal{M}|=k$：取使 $W(\mathcal{M}\cup\{m\})$ 下降最多的未选点加入；\\
+3.\ SWAP：对每个 $(m,h)\in\mathcal{M}\times(\mathcal{M}^{c})$，计算交换后的
+$W$，若严格下降则执行交换；\\
+4.\ 重复第 3 步直至无改进，输出 $\mathcal{M}$，令 $c_i=\arg\min_{m}d(i,m)$。
+}}
+\end{center}
+
+原文只说明“分为 5 类”，未报告 $k$ 的选择依据、未报告轮廓系数、未说明初
+始化方式。这三点都是聚类的自由度：$k$ 决定后续所有层级的粒度，初始化决定
+局部最优，轮廓系数决定“5 类”是否优于“4 类”或“6 类”。
+
+\subsubsection{环节 3：类内 CCR-DEA}
+
+在类 $c$ 内部，把类内学生作为参照集 $\mathcal{S}_c$，用投入导向 CCR 模型
+计算效率\refs{1}。包络形式为
+\begin{equation}
+\begin{aligned}
+\min_{\theta,\bm{\lambda}}\ &\theta\\
+\text{s.t.}\ &\sum_{i'\in\mathcal{S}_c}\lambda_{i'}x_{i'j}\le\theta x_{ij},
+\quad j=1,\dots,4,\\
+&\sum_{i'\in\mathcal{S}_c}\lambda_{i'}y_{i'}\ge y_i,\\
+&\lambda_{i'}\ge 0 .
+\end{aligned}
+\label{eq:ccr}
+\end{equation}
+加入 $\varepsilon$ 松弛与 Archimedes 无穷小后，模型变为
+\begin{equation}
+\min\ \theta-\varepsilon\Bigl(\sum_{j=1}^{4}s_j^{-}+s^{+}\Bigr)
+\quad\text{s.t.}\quad
+\sum_{i'}\lambda_{i'}x_{i'j}+s_j^{-}=\theta x_{ij},\ \
+\sum_{i'}\lambda_{i'}y_{i'}-s^{+}=y_i,
+\label{eq:ccr-eps}
+\end{equation}
+所有变量非负。$\varepsilon$ 的作用是把“弱有效”（$\theta=1$ 但存在松弛）与
+“强有效”区分开，其取值在数值上应小于任一可行松弛的量级；原文未披露
+$\varepsilon$，本文取 $10^{-9}$。
+
+对偶形式给出乘子 $(u,v)$：
+\begin{equation}
+\max\ uy_i\quad\text{s.t.}\quad v^{\top}\bx_i=1,\ \
+uy_{i'}-v^{\top}\bx_{i'}\le 0\ (\forall i'\in\mathcal{S}_c),\ u,v\ge 0,
+\label{eq:multiplier}
+\end{equation}
+乘子可用于反事实计算：若把个体 $i$ 的投入换成参照个体 $i'$ 的投入，则其效
+率可改写为 $u^{\top}y_i/v^{\top}\bx_{i'}$。这一式子在后文“模仿同伴”的评
+价中会用到。
+
+\subsubsection{环节 4：context-dependent 分层}
+
+剔除式分层\refs{2}把“当前前沿”逐层剥离：
+\begin{equation}
+\begin{aligned}
+E_1&=\bigl\{i\in\mathcal{S}_c:\ \theta_i^{\mathcal{S}_c}=1\bigr\},\\
+E_{k}&=\bigl\{i\in\mathcal{S}_c\setminus\textstyle\bigcup_{l<k}E_l:\
+\theta_i^{\mathcal{S}_c\setminus\cup_{l<k}E_l}=1\bigr\},\quad k=2,\dots,K .
+\end{aligned}
+\label{eq:layer}
+\end{equation}
+层号越小越接近前沿。算法 2 给出实现。
+
+\begin{center}
+\fbox{\parbox{0.93\textwidth}{
+\tabfont
+\textbf{算法 2}\ \ 剔除式分层（context-dependent DEA）\\[2pt]
+\textbf{输入：}类内样本 $\mathcal{S}_c$、投入 $\bX$、产出 $\bY$\\
+\textbf{输出：}层号 $S_i$ 与各层的效率 $\theta_i^{(l)}$\\
+1.\ 令 $R\leftarrow\mathcal{S}_c$，$l\leftarrow 1$；\\
+2.\ 在 $R$ 上求解式\eqref{eq:ccr}，记 $\theta_i^{(l)}$；\\
+3.\ 令 $E_l=\{i\in R:\theta_i^{(l)}=1\}$，$S_i\leftarrow l$（$i\in E_l$）；\\
+4.\ 令 $R\leftarrow R\setminus E_l$，$l\leftarrow l+1$；若 $R\neq\varnothing$
+转第 2 步；\\
+5.\ 输出 $S_i$ 及各层效率。
+}}
+\end{center}
+
+这一步的实质是“把最好的剔掉，再看谁是剩下的最好的”。它有一个副作用：层
+的规模完全由数据决定，可能出现“第 1 层 3 人、第 5 层 58 人”的极端不均衡
+（本文复现的第 1 类即是如此）。层规模不均衡会直接影响后续三准则的稳定性，
+因为 $\Omega,P$ 都要在“上一层”集合上求解。
+
+\subsubsection{环节 5：三准则与参考路径}
+
+设个体 $i$ 处于第 $l$ 层，记其上层集合 $U_i=\{i':S_{i'}<S_i\}$、下层集合
+$D_i=\{i':S_{i'}>S_i\}$。原文的三准则可写为：
+\begin{align}
+\Omega_i&=\max\Bigl\{\phi:\ \sum_{i'\in U_i}\lambda_{i'}\bx_{i'}\le\bx_i,\
+\sum_{i'\in U_i}\lambda_{i'}y_{i'}\ge\phi y_i,\ \bm{\lambda}\ge0\Bigr\},
+\label{eq:omega}\\
+P_i&=\max\Bigl\{\phi:\ \sum_{i'\in D_i}\lambda_{i'}\bx_{i'}\le\bx_i,\
+\sum_{i'\in D_i}\lambda_{i'}y_{i'}\ge\phi y_i,\ \bm{\lambda}\ge0\Bigr\},
+\label{eq:progress}\\
+D_i&=\min_{i'\in U_i}\Bigl\{\textstyle\sum_{j=1}^{4}|x_{ij}-x_{i'j}|+|y_i-y_{i'}|\Bigr\},
+\label{eq:prox}\\
+H_i&=\frac{1}{\Omega_i}+P_i .
+\label{eq:H}
+\end{align}
+三者的含义分别是：$\Omega_i>1$ 表示相对上层前沿仍有产出扩张空间（被上层
+“吸引”的强度）；$P_i<1$ 表示相对下层前沿已处领先（进步已实现）；$D_i$ 是
+到最近上层同伴的加权 $L_1$ 距离（用等权是因为所有变量都已在 0—100 标度
+上）；$H_i$ 越小表示“上行阻力”越小。
+
+路径拼接采用贪心规则：在 $U_i$ 中取 $H$ 最小者（若并列则取 $D$ 最小者）
+作为下一站，重复直至到达第 1 层。这一规则只看“谁最容易跟上”，不看“跟上
+之后还剩多少提升空间”，因此得到的路径是\textbf{可行路径}而非\textbf{最优
+路径}——它保证每一步都有现成的模仿对象，却不保证总提升最大。
+
+\subsubsection{原文的自由度与内部矛盾}
+
+把上述五环写清后，可以逐项列出原文留下的自由度（表 \ref{tab:df}）。这些
+自由度并非作者的疏忽，而是方法本身尚未闭合的地方；复现时必须逐一给出自己
+的选择，并在报告中说明选择的理由。
+
+\begin{table}[htbp]
+\centering
+\tabfont
+\caption{原文的未披露参数与本文的处置}
+\label{tab:df}
+\begin{tabularx}{\textwidth}{@{}p{2.5cm}p{3.5cm}X@{}}
+\toprule
+参数/口径 & 原文披露情况 & 本文处置与理由 \\
+\midrule
+题项权重 & 未给，仅称“按题型加权” &
+  组内等权（式\eqref{eq:composite}），组间由 DEA 自行定权 \\
+$\sigma^2<10$ 判据 & 给出阈值，未给推导 &
+  保留为诊断；触发时改用潜变量秩重映射，避免方差塌缩 \\
+聚类数 $k$ & 固定 5，未说明依据 &
+  计算 $k=3,\dots,8$ 的轮廓系数，仍取 $k=5$（与原文类型数一致），并报告次优性 \\
+$\varepsilon$ & 未披露 & 取 $10^{-9}$，小于任一可行松弛量级 \\
+层级数 & 固定 5，未说明依据 &
+  主口径取类内效率的 5 个分位带（90/75/60/45 百分位），保证状态占满；剔除式作对照 \\
+路径并列规则 & 未说明 &
+  以 $(H,D)$ 字典序打破并列 \\
+$H$ 的定义 & 文字为 $H=1/\Omega+P$，表中数值不符 &
+  按文字定义复算，并指出表中数值不可由同一行 $(\Omega,P)$ 生成 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+其中 $H$ 的不一致值得单独说明。以表 3 中某个体为例，$\Omega=0.0514$、
+$P=0.0096$，按式\eqref{eq:H} 应有 $H\approx19.5$，而表中为 $0.43$；若反
+过来取 $H=\Omega+P$，则得 $0.061$，仍不等于 $0.43$。这说明表中的 $H$ 或
+许经过了额外的归一化，或许是不同口径的混合。本文的处置是：忠于文字定义，
+并用复算结果与原文数值并列展示，让读者看到差异，而不是把差异藏起来。
+
+\subsubsection{可复现性判定}
+
+按“能否在只有论文的条件下独立复算”为标准，五个环节可分三类（表
+\ref{tab:repro-judge}）。这一判定直接决定了本文第二部分的工作方式：能复
+现的照做，需标定的用锚点约束，不可复现的显式说明并以敏感性分析替代。
+
+\begin{table}[htbp]
+\centering
+\tabfont
+\caption{五个环节的可复现性判定}
+\label{tab:repro-judge}
+\begin{tabularx}{\textwidth}{@{}p{1.3cm}p{2.4cm}p{2.0cm}X@{}}
+\toprule
+环节 & 判定 & 关键障碍 & 本文对策 \\
+\midrule
+量化 & 需标定 & 原始作答不公开；权重与 $\sigma^2$ 判据未给 &
+  依题项分布生成作答，按式\eqref{eq:quant}复算，报告量化示例 \\
+聚类 & 基本可复现 & $k$ 的依据缺失 &
+  照做 PAM-Gower，补算轮廓系数，并检验与“设计标签”的一致率 \\
+DEA & 可复现 & $\varepsilon$ 未给 &
+  取极小 $\varepsilon$，用 lpSolve 求解包络形式与乘子形式互验 \\
+分层 & 可复现（口径有二） &
+  层数未给依据；剔除式层规模不均衡 &
+  主口径改用分位带，剔除式作对照，二者均报告 \\
+准则与路径 & 部分不可复现 & $H$ 定义与表值矛盾；并列规则缺失 &
+  按文字定义复算，路径规则显式化，差异写入对照表 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+最后需要指出一处方法论的“隐性成本”。原文的流程看似客观，但五个环节中有
+四个环节（量化权重、$k$、$\varepsilon$、层数）含有分析者的选择，最终推荐
+路径对这四者的联合依赖并未被评估。本文在复现时对每一项都做了单因素敏感性
+检查（详见本节末的敏感性讨论），目的是回答一个原文没有回答的问题：\textbf{
+这条推荐路径是数据的性质，还是口径的产物？}

@@ -1,0 +1,37 @@
+# ---- LaTeX 编译中间产物（main.pdf 为成品，保留入库）----
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.synctex(busy)
+*.fls
+*.fdb_latexmk
+*.xdv
+*.bbl
+*.blg
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb
+*.bcf
+*.run.xml
+
+# ---- R 会话与工程临时文件 ----
+.Rhistory
+.Rapp.history
+.RData
+.Rproj.user/
+*.Rcheck/
+
+# ---- 编辑器 / 系统文件 ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 临时文件 ----
+~$*
+*.tmp

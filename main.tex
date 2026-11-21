@@ -1,0 +1,109 @@
+% !TeX program = xelatex
+% =============================================================================
+%  《随机过程》大作业
+%  题目：学习效率层级演化的随机过程建模与策略推荐
+%         ——对一篇 context-dependent DEA 论文的解析、复现与方法替换
+%  编译：XeLaTeX（TeXworks 中将编译引擎选为 XeLaTeX，编译两遍即可）
+% =============================================================================
+\documentclass[12pt,a4paper]{ctexart}
+
+\usepackage{geometry}
+\geometry{a4paper, top=2.54cm, bottom=2.54cm, left=3.17cm, right=3.17cm,
+          headheight=0.5cm, headsep=0.6cm, footskip=1.0cm}
+
+\usepackage{amsmath,amssymb,amsthm,bm}
+\usepackage{booktabs,tabularx,multirow,array,longtable}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\captionsetup{font=small,labelsep=quad}
+\captionsetup[table]{position=top,skip=4pt}
+\captionsetup[figure]{position=bottom,skip=4pt}
+\graphicspath{{figures/}}
+
+% ---- 版式：正文小四(12pt)，1.5 倍行距，首行缩进 2 字符 -------------------
+\linespread{1.5}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{0pt}
+\pagestyle{plain}
+
+% ---- 标题格式：一级标题黑体加粗12pt左对齐，中文数字编号 ------------------
+\ctexset{
+  section = {
+    name    = {,、},
+    number  = \chinese{section},
+    format  = \heiti\bfseries\fontsize{12pt}{20pt}\selectfont\raggedright,
+    beforeskip = 14pt plus 3pt minus 2pt,
+    afterskip  = 8pt plus 2pt,
+  },
+  subsection = {
+    name    = {（,）},
+    number  = \chinese{subsection},
+    format  = \heiti\bfseries\fontsize{12pt}{18pt}\selectfont\raggedright,
+    beforeskip = 10pt plus 2pt minus 1pt,
+    afterskip  = 6pt plus 1pt,
+  },
+  subsubsection = {
+    name    = {,.},
+    number  = \arabic{subsubsection},
+    aftername = \quad,
+    format  = \heiti\bfseries\fontsize{12pt}{18pt}\selectfont\raggedright,
+    beforeskip = 8pt plus 2pt minus 1pt,
+    afterskip  = 4pt plus 1pt,
+  },
+}
+
+% ---- 定理类环境 -----------------------------------------------------------
+\theoremstyle{definition}
+\newtheorem{definition}{定义}[subsection]
+\newtheorem{proposition}{命题}[subsection]
+\newtheorem{remark}{注}[subsection]
+\renewcommand{\proofname}{\heiti 证明}
+
+% ---- 常用记号 -------------------------------------------------------------
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\ii}{\mathrm{i}}
+\newcommand{\bx}{\bm{x}}
+\newcommand{\bz}{\bm{z}}
+\newcommand{\bdelta}{\bm{\delta}}
+\newcommand{\btheta}{\bm{\theta}}
+\newcommand{\bpi}{\bm{\pi}}
+\newcommand{\bQ}{\bm{Q}}
+\newcommand{\bP}{\bm{P}}
+\newcommand{\bA}{\bm{A}}
+\newcommand{\bL}{\bm{L}}
+\newcommand{\bX}{\bm{X}}
+\newcommand{\bY}{\bm{Y}}
+\newcommand{\bZ}{\bm{Z}}
+\newcommand{\refs}[1]{$^{[#1]}$}
+
+% 表格通用：五号字
+\newcommand{\tabfont}{\zihao{5}\selectfont}
+
+\begin{document}
+
+\input{tex/00_cover}
+\input{tex/01_abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+\input{tex/02_problem}
+\input{tex/03_analysis}
+\input{tex/04_parse}
+\input{tex/05_repro}
+\input{tex/06_stochastic}
+\input{tex/07_compare}
+\input{tex/08_refs}
+\input{tex/09_appendix}
+
+\end{document}

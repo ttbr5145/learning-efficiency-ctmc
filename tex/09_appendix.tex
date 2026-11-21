@@ -1,0 +1,185 @@
+% =============================================================================
+%  附录
+% =============================================================================
+\newpage
+\section*{附\quad 录}
+\addcontentsline{toc}{section}{附录}
+\setcounter{subsection}{0}
+
+\subsection{符号表}
+
+\begin{table}[H]
+\centering
+\tabfont
+\caption{主要符号与含义}
+\label{tab:symbol}
+\begin{tabularx}{\textwidth}{@{}p{2.6cm}Xp{4.0cm}@{}}
+\toprule
+符号 & 含义 & 取值/单位 \\
+\midrule
+$\bx_i$ & 第 $i$ 人的四维投入向量，$\bx_i=(x_{i1},\dots,x_{i4})^{\top}$ & 各分量 0—100 \\
+$y_i$ & 期末英语成绩 & 30—99 \\
+$\theta_i$ & 类内 CCR 效率 & $(0,1]$ \\
+$S_i$ & 层级（1 最优，5 最差） & $\{1,\dots,5\}$ \\
+$\Omega_i,P_i,D_i,H_i$ & 吸引力、进步度、邻近度、障碍度 & 无量纲 \\
+$\lambda_i,\mu_i$ & 上行、下行强度 & 周$^{-1}$ \\
+$\rho_i=\lambda_i/\mu_i$ & 上行—下行强度比 & 无量纲 \\
+$c$ & 时间尺度参数 & 2.54 周$^{-1}$ \\
+$\bQ_i$ & 生成矩阵 & $5\times5$ \\
+$\bP_i(t)$ & 转移概率矩阵，$\bP_i(t)=\exp(\bQ_i t)$ & $5\times5$ \\
+$\pi_{i,k}$ & 平稳分布 & 概率 \\
+$T_1$ & 首达最高层的时间 & 周 \\
+$m_k=\E_k[T_1]$ & 首达时间的期望 & 周 \\
+$\kappa,\sigma$ & OU 过程的回复速度与波动率 & 周$^{-1}$，周$^{-1/2}$ \\
+$\theta^{*}$ & OU 过程的均值回复目标 & $(0,1]$ \\
+$\bdelta$ & 行为杠杆效应向量，$\bdelta=(\delta_1,\dots,\delta_5)^{\top}$ & 对数强度 \\
+$\mathcal{A},h_a$ & 动作集与动作的学时成本 & h/周 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{关键推导}
+
+\subsubsection{平稳分布}
+
+设链的强度为常数 $\lambda,\mu$（个体层面加下标 $i$ 即可）。细致平衡要求相
+邻状态间的概率流相等：
+\begin{equation}
+\pi_{k}\lambda=\pi_{k-1}\mu,\qquad k=2,\dots,5,
+\label{eq:app-balance}
+\end{equation}
+故 $\pi_k=\pi_{k-1}\mu/\lambda=\pi_{k-1}/\rho$。记 $r=1/\rho$，则
+$\pi_k=\pi_1 r^{k-1}$。由归一化
+$\pi_1(1+r+\cdots+r^4)=1$ 得
+\begin{equation}
+\pi_k=\frac{r^{k-1}(r-1)}{r^{5}-1},\qquad k=1,\dots,5 .
+\label{eq:app-pi}
+\end{equation}
+当 $\rho<1$（$r>1$）时 $\pi_k$ 随 $k$ 递增，长期质量堆在第 5 层；$\rho>1$
+时相反。式\eqref{eq:app-pi} 与数值解 $\bP(16)$ 的第 5 行几乎重合，可作为
+“16 周已基本混合”的解析证据\refs{7,8}。
+
+\subsubsection{首达时间方程}
+
+设 $m_k=\E_k[T_1]$。对 $k\ge2$，在无穷小时间 $\dd t$ 内，过程以
+$\lambda_k\dd t$ 的概率跳到 $k-1$、以 $\mu_k\dd t$ 的概率跳到 $k+1$、以
+$1-(\lambda_k+\mu_k)\dd t$ 的概率留在原地。由全期望公式并令 $\dd t\to0$，
+得
+\begin{equation}
+m_k=\lambda_k\dd t\,m_{k-1}+\mu_k\dd t\,m_{k+1}
++\bigl[1-(\lambda_k+\mu_k)\dd t\bigr](m_k+\dd t)+o(\dd t),
+\end{equation}
+移项并除以 $\dd t$ 即得
+\begin{equation}
+\lambda_k\bigl(m_k-m_{k-1}\bigr)+\mu_k\bigl(m_k-m_{k+1}\bigr)=1,
+\qquad k=2,3,4,
+\label{eq:app-hit}
+\end{equation}
+边界条件为 $m_1=0$ 与 $\lambda_5(m_5-m_4)=1$（第 5 层只能上行）。写成矩阵
+形式 $\bA\bm{m}=-\bm{1}$，其中 $\bA$ 为三对角矩阵，用追赶法或直接求逆均可
+在 $O(5)$ 时间内解出\refs{11,12}。
+
+\subsubsection{OU 首达时间公式}
+
+对扩散过程 $\dd\theta=\kappa(\theta^{*}-\theta)\dd t+\sigma\dd W$，其尺度
+密度为
+\begin{equation}
+s(z)=\exp\Bigl[-\int^{z}\frac{2\kappa(\theta^{*}-u)}{\sigma^2}\dd u\Bigr]
+=\exp\Bigl[\frac{\kappa}{\sigma^2}(z-\theta^{*})^2\Bigr].
+\end{equation}
+首达时间 $u(x)=\E_x[T_b]$ 满足边值问题 $\mathcal{L}u=-1$、$u(b)=0$，其中
+$\mathcal{L}=\frac{\sigma^2}{2}\frac{\dd^2}{\dd x^2}
++\kappa(\theta^{*}-x)\frac{\dd}{\dd x}$。解得
+\begin{equation}
+u(x)=\frac{2}{\sigma^2}\int_{x}^{b}s(y)^{-1}
+\Bigl(\int_{y}^{b}s(z)\dd z\Bigr)\dd y ,
+\label{eq:app-ou}
+\end{equation}
+可用数值积分计算。以 Brownian 运动（$\kappa=0$、$s\equiv1$）校验：
+$u(x)=(b-x)^2/\sigma^2$，与已知结果一致\refs{9}。
+
+\subsubsection{截面似然的估计}
+
+式\eqref{eq:lik} 的对数似然为
+\begin{equation}
+\ell=\sum_i\Bigl[(S_i-1)\log r_i+\log(r_i-1)-\log(r_i^5-1)\Bigr],
+\qquad r_i=e^{-\alpha-\bdelta^{\top}\bz_i}.
+\end{equation}
+对 $(\alpha,\bdelta)$ 用 BFGS 迭代，梯度由链式法则解析给出，标准误取观测
+信息阵 $\mathcal{I}=-\nabla^2\ell$ 之逆的对角元开方\refs{6,14}。由于 $\ell$
+只用到 $S_i$ 的边缘分布，其识别能力有限：$\rho$ 的绝对尺度与 $c$ 不可分
+离，后者由锚点标定。
+
+\subsubsection{反射原理}
+
+设 $X_t=x+\mu t+\sigma W_t$，$\tau_b=\inf\{t:X_t=b\}$。由 Girsanov 变换把
+带漂移的过程换成无漂移的 Brown 运动，可证
+\begin{equation}
+\Pbb(\tau_b\le T)=\Phi\Bigl(\frac{\mu T-d}{\sigma\sqrt{T}}\Bigr)
++e^{2\mu d/\sigma^{2}}\Phi\Bigl(\frac{-\mu T-d}{\sigma\sqrt{T}}\Bigr),
+\qquad d=b-x .
+\end{equation}
+第一项对应“终点已越界”，第二项是反射项，补偿“终点未越界但途中越界”的路径；
+当 $\mu=0$ 时它退化为熟知的 $2\Phi(-d/\sigma\sqrt{T})$。式中的指数因子在
+$\mu\neq0$ 时不可省，否则会明显偏小。
+
+\subsubsection{Itô 公式与 OU 闭式解}
+
+取 $f(t,x)=e^{\kappa t}(x-\theta^{*})$，则 $f_t=\kappa f$、$f_x=e^{\kappa t}$、
+$f_{xx}=0$，Itô 公式
+$\dd f=\bigl(f_t+\kappa(\theta^{*}-\theta_t)f_x\bigr)\dd t+\sigma f_x\,\dd W_t$
+中漂移项恰好相消，得 $\dd f=e^{\kappa t}\sigma\,\dd W_t$。两边从 $0$ 积到 $t$，
+\begin{equation}
+\theta_t=\theta^{*}+\bigl(\theta_0-\theta^{*}\bigr)e^{-\kappa t}
++\sigma\int_0^{t}e^{-\kappa(t-s)}\,\dd W_s .
+\end{equation}
+由 Itô 等距 $\E\bigl[(\int f\,\dd W)^2\bigr]=\int\E[f^2]\,\dd s$，
+\begin{equation}
+\Var[\theta_t]=\sigma^{2}\int_0^{t}e^{-2\kappa(t-s)}\,\dd s
+=\frac{\sigma^{2}}{2\kappa}\bigl(1-e^{-2\kappa t}\bigr),
+\end{equation}
+令 $t\to\infty$ 即得平稳方差 $\sigma^{2}/(2\kappa)$。
+
+\subsection{代码、数据与复现说明}
+
+全部计算在 R 4.6.0 下完成，依赖 \texttt{cluster}（PAM 与 Gower 距离）、
+\texttt{lpSolve}（DEA 线性规划）、\texttt{Matrix}（矩阵指数）、
+\texttt{numDeriv}（数值 Hessian）、\texttt{ggplot2} 与
+\texttt{showtext}（绘图）。文件组织见表 \ref{tab:files}。
+
+\begin{table}[H]
+\tabfont
+\caption{交付文件夹的文件组织}
+\label{tab:files}
+\begin{tabularx}{\textwidth}{@{}p{4.9cm}X@{}}
+\toprule
+文件 & 作用 \\
+\midrule
+\texttt{main.tex} & 论文主文件，XeLaTeX 编译入口 \\
+\texttt{tex/*.tex} & 各章节与封面、摘要、参考文献、附录 \\
+\texttt{code/01\_recon\_data.R} & 标定数据重建（固定种子 20261121） \\
+\texttt{code/02\_chpi.R} & 量化、PAM-Gower、CCR-DEA、分层、三准则与路径 \\
+\texttt{code/03\_stochastic.R} & 生灭过程 MLE、首达时间、Gillespie、OU、策略优化 \\
+\texttt{code/04\_figures.R} & 生成 9 幅插图（PNG，300 dpi） \\
+\texttt{code/06\_textbook.R} & 谱隙、一致化、鞅、反射原理、Itô 与 OU 模拟的校验 \\
+\texttt{code/dea\_fun.R} & DEA 线性规划工具函数 \\
+\texttt{data/*.csv, *.rds} & 中间数据与结果（含 \texttt{chpi\_log.txt}、\texttt{sp\_log.txt}） \\
+\texttt{figures/*.png} & 论文插图 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+复现顺序为 \texttt{01}$\to$\texttt{02}$\to$\texttt{03}$\to$\texttt{04}，之后
+可用 \texttt{06\_textbook.R} 核对正文各项推导对应的全部数字（谱隙、一致化
+误差、调和函数、反射原理与 OU 模拟），
+每一步都会把结果写入 \texttt{data/} 并打印关键数值，便于逐项核对。论文编译
+在 TeXworks 中把编译引擎选为 XeLaTeX，连续编译两遍（第一遍生成目录与交叉
+引用，第二遍定稿），或直接执行
+\texttt{latexmk -xelatex main.tex}。所有随机过程均由固定种子控制，重跑结果
+完全一致。
+
+
+
+
+
+
