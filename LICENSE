@@ -4,7 +4,7 @@
 
 | 内容 | 路径 | 许可证 |
 | --- | --- | --- |
-| 代码 | `代码/`（R 与 Python 脚本、构建脚本） | MIT License（见下方全文） |
+| 代码 | `代码/`（R 与 Python 脚本、构建脚本） | MIT License（版权归吴桐个人所有，见下方全文） |
 | 论文、插图、网页、文字 | `论文/`、`网页/`、`README.md`、`数据/web_data.json` 的字段说明 | CC BY-NC 4.0 |
 | 第三方数据与原文 | 原始问卷不公开；引文 Zhao et al. (2023) | 版权归原作者，仅用于课程学习 |
 
@@ -12,7 +12,10 @@
 
 ## 1. 代码：MIT License
 
-Copyright (c) 2026 吴桐、赵睿、张文琦、吴梦豪
+本节代码（`代码/` 目录下全部 R 与 Python 脚本）的著作权归 **吴桐** 个人所有；
+论文、插图与网页等非代码内容的署名仍为吴桐、赵睿、张文琦、吴梦豪（见第 2 节）。
+
+Copyright (c) 2026 吴桐
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
