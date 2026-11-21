@@ -167,6 +167,7 @@
         </div>
       </div>
       <div class="stats" id="actStats"></div>
+      <p class="hint" id="actWarn" style="display:none;color:#f2c14e"></p>
     </div>
   </div>
 </section>
@@ -197,6 +198,7 @@
           <div class="pval"><span id="valB">—</span><span class="pnote">已到更高层级</span></div>
         </div>
       </div>
+      <p class="hint" id="stuWarn" style="display:none;color:#f2c14e"></p>
       <div class="legend"><span><i style="background:#6c92ff"></i>个体累积曲线</span><span><i style="background:#4fd1a5"></i>同层均值（不干预）</span><span><i style="background:#f2903c"></i>50% 参考线</span></div>
       <div class="stats" id="stuStats"></div>
     </div>
@@ -7291,7 +7293,10 @@ const doseOf = hv => ACT[actIdx].hours ? hv / ACT[actIdx].hours : 0;
 // 剂量提示：投入等于建议学时 ≡ 论文里的「施加该动作」
 function updateDose(){
   const el = document.getElementById("doseHint");
-  if(el) el.textContent = `（剂量 ×${fmt(doseOf(actH),2)}，×1 即论文口径）`;
+  if(!el) return;
+  el.textContent = actH <= 0
+    ? "（剂量 ×0.00 ＝ 不干预，把投入拉起来才有效果）"
+    : `（剂量 ×${fmt(doseOf(actH),2)}，×1 即论文口径）`;
 }
 
 /* ---------- SVG 折线图 ---------- */
@@ -7410,6 +7415,12 @@ function renderAct(){
     <div class="stat"><div class="k">第 5 层 ${hz} 周跃层</div><div class="v">${(upProb(p5,4)*100).toFixed(1)}%</div></div>
     <div class="stat"><div class="k">第 5 层 ${hz} 周期望效率</div><div class="v">${fmt(expEff(p5),4)}</div></div>
     <div class="stat"><div class="k">ρ 增量（1→5 层）</div><div class="v" style="font-size:15px">${dRho.map(x=>(x>=0?"+":"")+fmt(x,2)).join(" · ")}</div></div>`;
+  const aw = document.getElementById("actWarn");
+  if(aw){
+    const zeroH = actH <= 0;
+    aw.style.display = zeroH ? "block" : "none";
+    if(zeroH) aw.textContent = `每周投入是 0 h，等于没施加动作：五层 ρ 与滑轨上的基线（灰点）完全重合。把投入拉到建议学时（${ACT[actIdx].hours} h/周）才能看到动作的效果。`;
+  }
 }
 document.getElementById("hzSeg").addEventListener("click", e=>{
   if(e.target.tagName!=="BUTTON") return;
@@ -7485,9 +7496,10 @@ function drawStuPanel(svgId, series, lamSeries, tNow, start){
 function renderStu(){
   const st = STUD.find(s=>s.id === +stuSel.value) || STUD[0];
   const dz = ACT[actIdx].dz;
+  const f = doseOf(actH);
   const start = st.layer-1;
-  const rhoB = st.rho, rhoA = rhoOf(st, dz, doseOf(actH));
-  const lamB = layerMeanBase[start], lamA = layerMean(dz, doseOf(actH))[start];
+  const rhoB = st.rho, rhoA = rhoOf(st, dz, f);
+  const lamB = layerMeanBase[start], lamA = layerMean(dz, f)[start];
   const serB=[], serA=[], serLam=[];
   for(let t=0;t<=16.001;t+=0.5){
     serB.push([t, upProb(pt([rhoB,rhoB,rhoB,rhoB,rhoB], t, start), start)]);
@@ -7495,7 +7507,14 @@ function renderStu(){
     serLam.push([t, upProb(pt([lamB,lamB,lamB,lamB,lamB], t, start), start)]);
   }
   document.getElementById("stuT").textContent = fmt(stuT,1)+" 周";
-  document.getElementById("paneBTitle").textContent = `${ACT[actIdx].name} ${fmt(actH,1)} h/周`;
+  const zero = f < 0.02;   // 投入 0 h ⇒ 与不干预同一条链，必须明说
+  document.getElementById("paneBTitle").textContent = zero
+    ? "不干预（投入 0 h/周）"
+    : `${ACT[actIdx].name} ${fmt(actH,1)} h/周`;
+  const warn = document.getElementById("stuWarn");
+  warn.style.display = zero ? "block" : "none";
+  if(zero) warn.textContent =
+    `02 里的每周投入现在是 0 h，等于没有施加动作，所以左右两条曲线必然重合。回到 02 把投入拉到该动作的建议学时（${ACT[actIdx].hours} h/周）再比较。`;
   const vA = drawStuPanel("chartStuA", serB, serLam, stuT, start);
   const vB = drawStuPanel("chartStuB", serA, null, stuT, start);
   document.getElementById("valA").textContent = (vA*100).toFixed(1)+"%";
@@ -7561,7 +7580,9 @@ function syncHist(){
   document.getElementById("histLo").textContent = lo.toFixed(2);
   document.getElementById("histHi").textContent = hi.toFixed(2);
   document.getElementById("histMode").textContent = histMode === "opt"
-    ? `口径：${ACT[actIdx].name} ${fmt(actH,1)} h/周（剂量 ×${fmt(f,2)}），变绿 = ρ > 1`
+    ? (f <= 0
+        ? "口径：投入 0 h/周 ＝ 未施加动作，与原始 ρ 完全相同"
+        : `口径：${ACT[actIdx].name} ${fmt(actH,1)} h/周（剂量 ×${fmt(f,2)}），变绿 = ρ > 1`)
     : "口径：论文原始 ρ_i = exp(α + δᵀz_i)";
   const med = ([...vals].sort((a,b)=>a-b)[Math.floor(vals.length/2)]);
   const mean = vals.reduce((a,b)=>a+b,0)/vals.length;
@@ -7576,6 +7597,8 @@ syncHist();
 </script>
 </body>
 </html>
+
+
 
 
 
