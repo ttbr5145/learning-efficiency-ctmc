@@ -2,7 +2,9 @@
 
 以 519 名学生的英语学习问卷为例：把学习效率聚成五级层级，先复现原文的 context-dependent DEA「分层—吸引力—进步度—策略路径」证据链，再把层级当作状态空间，改用**带协变量的生灭过程 + OU 扩散**，用同一个对象回答"层级怎么演化、多久能升一级、每周多出的学时该投到哪里"。
 
-东北林业大学《随机过程》课程大作业。作者：赵睿（理学院 数学与应用数学 2024-01 班，学号 2024213044）；授课教师：艾晓辉。篇幅 49 页、9 幅插图、21 张表、57 个编号公式。
+东北林业大学《随机过程》课程大作业。作者：吴桐、赵睿、张文琦、吴梦豪（理学院 数学与应用数学 2024 级）；授课教师：艾晓辉。论文分**个人版**（`论文/paper_solo.pdf`）与**团队版**（`论文/paper_team.pdf`）两份，正文、图表、公式完全一致，差别只在封面署名与页眉署名。篇幅 49 页、9 幅插图、21 张表、57 个编号公式。
+
+除了 PDF，还有一份**可交互的网页沙盘**：<https://xunsuiwuchu.site/learning-efficiency/>，层级分布、动作剂量、个体跃层、转移矩阵都由 519 条个体数据在浏览器里现场重算。
 
 原文献：Zhao L T, et al. A recommendation system for effective learning strategies: An integrated approach using context-dependent DEA. *Expert Systems with Applications*, 2023, 211: 118535.
 
@@ -36,10 +38,14 @@
 
 ```
 论文/
-  main.tex                 论文主文件（XeLaTeX 编译入口，版式与宏定义）
-  main.pdf                 已编译成品（49 页）
+  paper_solo.tex           个人版入口（封面与页眉署「吴桐」）
+  paper_team.tex           团队版入口（封面与页眉署四人）
+  main.tex                 两版共用正文（版式、宏定义、章节 \input 顺序）
+  paper_solo.pdf           个人版成品（49 页）
+  paper_team.pdf           团队版成品（49 页）
   tex/                     章节源文件，由 main.tex 依次 \input
-    00_cover.tex           封面（授课教师：艾晓辉）
+    00_cover_solo.tex      个人版封面
+    00_cover_team.tex      团队版封面（授课教师：艾晓辉）
     01_abstract.tex        摘要与关键词
     02_problem.tex         一、问题陈述
     03_analysis.tex        二、问题分析
@@ -58,6 +64,8 @@
   04_figures.R             生成 9 幅插图并写入 论文/fig/
   05_digest.R              导出全部结果到 数据/digest.txt（核对用）
   06_textbook.R            谱隙、一致化误差、调和函数、反射原理、OU 蒙特卡洛、Itô 方差表
+  07_export_web.R          把个体级结果导出为 数据/web_data.json（网页沙盘的数据源）
+  build_web.py             把 JSON 内联进 网页/template.html，生成单文件 网页/index.html
 数据/
   learning_data.csv        重建的 519×14 作答数据
   chpi_students.csv        量化得分、效率、层级、三准则
@@ -67,7 +75,11 @@
   silhouette.csv           不同 k 的轮廓宽度
   path_s480.csv            S480 四步路径
   textbook_table.csv       谱隙与混合时间表
+  web_data.json            网页用数据（meta/个体/系数/表格）
   digest.txt / chpi_log.txt / sp_log.txt / textbook_checks.txt   计算日志与全部数值
+网页/
+  template.html            沙盘模板（占位符 @@JSON@@）
+  index.html               构建产物：单文件网页，双击可离线打开，也是部署到网站的那一份
 查重/
   随机过程大作业_查重报告.pdf
   随机过程大作业_AIGC检测报告.pdf
@@ -77,21 +89,21 @@
 
 环境：R 4.6.0、TeX Live 2025（XeLaTeX）。R 依赖 `cluster`、`lpSolve`、`Matrix`、`numDeriv`、`ggplot2`、`showtext`、`sysfonts`。
 
-**1. 编译论文**（在 `论文/` 目录下执行，连续编译两遍，第一遍生成目录与交叉引用）
+**1. 编译论文**（在 `论文/` 目录下执行，两版各连续编译两遍，第一遍生成目录与交叉引用）
 
 ```bash
 cd 论文
-xelatex main.tex
-xelatex main.tex
+xelatex paper_solo.tex && xelatex paper_solo.tex
+xelatex paper_team.tex && xelatex paper_team.tex
 ```
 
 本机 `xelatex` 不在 PATH，用绝对路径：
 
 ```
-& "D:\texlive\2025\bin\windows\xelatex.exe" -interaction=nonstopmode main.tex
+& "D:\texlive\2025\bin\windows\xelatex.exe" -interaction=nonstopmode paper_team.tex
 ```
 
-或一条命令：`& "D:\texlive\2025\bin\windows\latexmk.exe" -xelatex main.tex`。插图路径由 `\graphicspath{{fig/}}` 指向 `论文/fig/`。
+或一条命令：`& "D:\texlive\2025\bin\windows\latexmk.exe" -xelatex paper_team.tex`。插图路径由 `\graphicspath{{fig/}}` 指向 `论文/fig/`；两版共用 `main.tex`，版本差异由入口文件里的 `\def\soloversion` / `\def\teamversion` 切换封面与页眉。
 
 **2. 重跑计算**（在仓库根目录执行）
 
@@ -112,6 +124,15 @@ xelatex main.tex
 
 生成插图时用 `png(..., family="SimSun")` 并设 `las=1`（y 轴刻度横排），因此图在 Windows 上直接可用；Linux 无 SimSun 时把 `family` 换成 `"Noto Sans CJK SC"` 之类的可用中文字体即可。
 
+**3. 重建网页**（在仓库根目录执行）
+
+```
+& "D:\Program Files\R\R-4.6.0\bin\x64\Rscript.exe" 代码\07_export_web.R
+python 代码\build_web.py
+```
+
+产物是 `网页/index.html`：一个不含外部依赖的单文件，浏览器直接打开即可交互，`python -m http.server` 或任意静态托管都能部署。
+
 ## 数据与口径说明
 
 1. **数据是「标定重建」而非「原始复原」**：原文未公开问卷、题项编码与量表，任何声称逐条复原的做法都不可信。本文以原文公开事实为锚点，构造统计结构同构的数据，并在论文中把「哪些是锚点、哪些是假设」逐条写清（三（二）1 与表 4、表 5）。因此复现结论分两级：结构性结论为「复现成立」，数值性结论为「在锚点约束下成立」。
@@ -122,9 +143,10 @@ xelatex main.tex
 | 项目 | 内容 |
 | --- | --- |
 | 学院 | 理学院 |
-| 专业班级 | 数学与应用数学 2024-01 班 |
+| 专业班级 | 数学与应用数学 2024-01 / 2024-02 班 |
 | 授课教师 | 艾晓辉 |
-| 作者 | 赵睿（学号 2024213044） |
+| 团队成员 | 吴桐、赵睿、张文琦、吴梦豪（2024 级） |
+| 论文版本 | 个人版 `论文/paper_solo.pdf`、团队版 `论文/paper_team.pdf` |
 
 ## 参考文献
 

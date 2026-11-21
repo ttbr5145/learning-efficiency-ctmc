@@ -1,9 +1,10 @@
 % !TeX program = xelatex
 % =============================================================================
-%  《随机过程》大作业
+%  《随机过程》大作业 —— 两版共用正文（个人版 paper_solo.tex / 团队版 paper_team.tex）
 %  题目：学习效率层级演化的随机过程建模与策略推荐
 %         ——对一篇 context-dependent DEA 论文的解析、复现与方法替换
-%  编译：XeLaTeX（TeXworks 中将编译引擎选为 XeLaTeX，编译两遍即可）
+%  说明：正文、图表、公式完全一致，两版差别只在封面署名与页眉署名。
+%  编译：xelatex paper_solo.tex 或 xelatex paper_team.tex（编译两遍）
 % =============================================================================
 \documentclass[12pt,a4paper]{ctexart}
 
@@ -18,6 +19,7 @@
 \usepackage{caption}
 \usepackage{enumitem}
 \usepackage{xcolor}
+\usepackage{fancyhdr}
 \usepackage[hidelinks]{hyperref}
 
 \captionsetup{font=small,labelsep=quad}
@@ -29,7 +31,24 @@
 \linespread{1.5}
 \setlength{\parindent}{2em}
 \setlength{\parskip}{0pt}
-\pagestyle{plain}
+
+% ---- 两版差异：封面与页眉的署名 ------------------------------------------
+\ifdefined\teamversion
+  \newcommand{\authortag}{吴桐\quad 赵睿\quad 张文琦\quad 吴梦豪}
+  \newcommand{\coverfile}{tex/00_cover_team}
+\else
+  \newcommand{\authortag}{吴桐}
+  \newcommand{\coverfile}{tex/00_cover_solo}
+\fi
+
+% ---- 页眉：左标题、右署名，页脚居中页码 ----------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\zihao{-5}\heiti 学习效率层级演化的随机过程建模与策略推荐}
+\fancyhead[R]{\zihao{-5}\heiti \authortag}
+\fancyfoot[C]{\zihao{-5}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
 
 % ---- 标题格式：一级标题黑体加粗12pt左对齐，中文数字编号 ------------------
 \ctexset{
@@ -90,7 +109,7 @@
 
 \begin{document}
 
-\input{tex/00_cover}
+\input{\coverfile}
 \input{tex/01_abstract}
 
 \newpage

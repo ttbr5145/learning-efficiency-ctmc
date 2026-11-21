@@ -210,7 +210,7 @@ write_tex <- function(df, file, caption, label, align = NULL, digits = 3, size =
 par_tab <- data.frame(变量 = c("常数项 $\\alpha$", cov_cn),
                       估计 = c(alpha, delta), 标准误 = c(se[1], se[2:6]),
                       "$e^{\\hat{\\delta}}$" = c(exp(alpha), exp(delta)))
-write_tex(par_tab, file.path(root, "tex", "tab_ctmc_par.tex"),
+write_tex(par_tab, file.path(root, "论文", "tex", "tab_ctmc_par.tex"),
           "生灭过程参数估计（$\\rho_i=\\exp(\\alpha+\\delta^{\\top}z_i)$）", "tab:ctmcpar",
           align = "lccc", digits = 3)
 
@@ -223,7 +223,7 @@ stu_tab <- data.frame(个体 = paste0("S", l4), 层级 = s[l4], 效率 = theta[l
 colnames(stu_tab) <- c("个体", "层级", "效率", "$\\rho$", "$E[T_1]$", "$\\rho'$",
                        "$E[T_1]'$", "$p$", "$p'$")
 stu_tab <- stu_tab[order(stu_tab[, 5]), ]
-write_tex(stu_tab, file.path(root, "tex", "tab_time.tex"),
+write_tex(stu_tab, file.path(root, "论文", "tex", "tab_time.tex"),
           "第 5 类第 4 层个体的期望首达时间与策略优化效果", "tab:time",
           align = "lcccccccc", digits = 2)
 
@@ -238,7 +238,7 @@ s480_tab <- data.frame(
 s480_tab$增益 <- (s480_tab$Eth - theta480) / theta480 * 100
 colnames(s480_tab) <- c("方案", "额外学时/周", "$\\rho$", "$E[T_1]$（周）",
                         "16 周跃层概率", "16 周期望效率", "相对提升(\\%)")
-write_tex(s480_tab, file.path(root, "tex", "tab_s480.tex"),
+write_tex(s480_tab, file.path(root, "论文", "tex", "tab_s480.tex"),
           "S480 个案：原文参考路径与随机过程策略的对照", "tab:s480",
           align = "lcccccc", digits = 3)
 
@@ -251,7 +251,7 @@ gain_tab <- data.frame(
               (1 - theta480) * (1 - exp(-kappa * 32)) / theta480 * 100, 43.97),
   所需周数 = c(16, 32, T43))
 colnames(gain_tab) <- c("时间尺度", "期望效率", "相对提升(\\%)", "所需周数")
-write_tex(gain_tab, file.path(root, "tex", "tab_gain.tex"),
+write_tex(gain_tab, file.path(root, "论文", "tex", "tab_gain.tex"),
           "OU 扩散模型给出的效率提升时间尺度", "tab:gain", align = "lccc", digits = 2)
 
 # ---- 保存 -------------------------------------------------------------

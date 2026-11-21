@@ -155,13 +155,17 @@ $\dd f=\bigl(f_t+\kappa(\theta^{*}-\theta_t)f_x\bigr)\dd t+\sigma f_x\,\dd W_t$
 \toprule
 文件 & 作用 \\
 \midrule
-\texttt{论文/main.tex} & 论文主文件，XeLaTeX 编译入口 \\
-\texttt{论文/tex/*.tex} & 各章节与封面、摘要、参考文献、附录 \\
+\texttt{论文/paper\_solo.tex} & 个人版编译入口（封面与页眉署一人） \\
+\texttt{论文/paper\_team.tex} & 团队版编译入口（封面与页眉署四人） \\
+\texttt{论文/main.tex} & 两版共用正文：版式、宏定义、章节 \verb|\input| 顺序 \\
+\texttt{论文/tex/*.tex} & 各章节与两版封面、摘要、参考文献、附录 \\
 \texttt{代码/01\_recon\_data.R} & 标定数据重建（固定种子 20261121） \\
 \texttt{代码/02\_chpi.R} & 量化、PAM-Gower、CCR-DEA、分层、三准则与路径 \\
 \texttt{代码/03\_stochastic.R} & 生灭过程 MLE、首达时间、Gillespie、OU、策略优化 \\
 \texttt{代码/04\_figures.R} & 生成 9 幅插图（PNG，300 dpi） \\
 \texttt{代码/06\_textbook.R} & 谱隙、一致化、鞅、反射原理、Itô 与 OU 模拟的校验 \\
+\texttt{代码/07\_export\_web.R} & 导出网页沙盘所需的数据（\texttt{数据/web\_data.json}） \\
+\texttt{代码/build\_web.py} & 生成单文件交互网页 \texttt{网页/index.html} \\
 \texttt{代码/dea\_fun.R} & DEA 线性规划工具函数 \\
 \texttt{数据/*.csv, *.rds} & 中间数据与结果（含 \texttt{chpi\_log.txt}、\texttt{sp\_log.txt}） \\
 \texttt{论文/fig/*.png} & 论文插图 \\
@@ -175,7 +179,8 @@ $\dd f=\bigl(f_t+\kappa(\theta^{*}-\theta_t)f_x\bigr)\dd t+\sigma f_x\,\dd W_t$
 每一步都会把结果写入 \texttt{数据/} 并打印关键数值，便于逐项核对。论文编译
 在 TeXworks 中把编译引擎选为 XeLaTeX，连续编译两遍（第一遍生成目录与交叉
 引用，第二遍定稿），或直接执行
-\texttt{latexmk -xelatex main.tex}。所有随机过程均由固定种子控制，重跑结果
+\texttt{latexmk -xelatex paper\_solo.tex}（团队版把文件名换成
+\texttt{paper\_team.tex}）。两版正文完全一致，只有封面与页眉的署名不同。所有随机过程均由固定种子控制，重跑结果
 完全一致。
 
 

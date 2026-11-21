@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>学习效率层级演化 · 随机过程交互沙盘</title>
+<style>
+  :root{
+    --bg:#060a14; --panel:rgba(16,25,46,.78); --line:#212f4d; --text:#e9effc; --dim:#95a5c9;
+    --dim2:#6d7da2; --accent:#6c92ff; --mint:#4fd1a5; --amber:#f2c14e; --orange:#f2903c; --rose:#d4637c;
+    --mono:"JetBrains Mono","Cascadia Code",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;color:var(--text);font-family:"Inter","HarmonyOS Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    line-height:1.7;background:
+      radial-gradient(1100px 620px at 12% -8%, #17244b 0%, transparent 62%),
+      radial-gradient(800px 520px at 92% 2%, #12303a 0%, transparent 58%),
+      linear-gradient(180deg,#060a14,#080e1c 50%,#060a14);}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+  a{color:#9fb8ff}
+  code,.mono{font-family:var(--mono);font-size:12.5px}
+  /* hero */
+  header{padding:78px 0 24px}
+  .tag{display:inline-flex;gap:8px;align-items:center;font-size:13px;color:var(--dim);
+    border:1px solid var(--line);padding:6px 14px;border-radius:999px;background:rgba(20,30,56,.5)}
+  .tag i{width:6px;height:6px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px var(--mint)}
+  h1{font-size:clamp(30px,4.4vw,52px);line-height:1.18;margin:24px 0 12px;font-weight:800;letter-spacing:-.6px;
+    background:linear-gradient(100deg,#f5f8ff 15%,#93b4ff 62%,#63e2bd 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .authors{color:var(--dim);font-size:14.5px;letter-spacing:.6px}
+  .authors b{color:var(--text);font-weight:600}
+  .sub{color:var(--dim);max-width:820px;margin-top:12px;font-size:15px}
+  /* section */
+  section{padding:44px 0}
+  .head{display:flex;align-items:baseline;gap:14px;margin-bottom:6px}
+  .no{font-family:var(--mono);font-size:13px;color:var(--accent);letter-spacing:2px}
+  h2{font-size:clamp(21px,2.3vw,28px);margin:0;font-weight:760;letter-spacing:-.3px}
+  .lead{color:var(--dim);max-width:860px;margin:8px 0 22px;font-size:14.5px}
+  .card{border:1px solid var(--line);background:var(--panel);border-radius:18px;padding:24px;backdrop-filter:blur(10px)}
+  /* controls */
+  .ctlrow{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;margin-bottom:18px}
+  .ctl{min-width:150px}
+  .ctl>label{display:block;font-size:12px;color:var(--dim2);letter-spacing:.4px;margin-bottom:8px}
+  select{background:#0c1424;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:14px;outline:none;min-width:150px}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .seg button{background:#0c1424;color:var(--dim);border:0;padding:9px 15px;font-size:13px;cursor:pointer}
+  .seg button.on{background:linear-gradient(120deg,#1d2d57,#1a3c39);color:#fff}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chipbtn{border:1px solid var(--line);background:#0c1424;color:var(--dim);border-radius:10px;
+    padding:8px 13px;font-size:13px;cursor:pointer}
+  .chipbtn.on{color:#fff;border-color:#3b5aa8;background:linear-gradient(120deg,#1a2a52,#183a45)}
+  input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:#1b2440;border-radius:4px;outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:linear-gradient(140deg,#8fb2ff,#5fe0bd);box-shadow:0 0 12px rgba(108,146,255,.55);cursor:pointer}
+  .val{font-family:var(--mono);font-size:13px;color:#fff}
+  .btn{border:1px solid var(--line);background:#12203a;color:var(--text);border-radius:10px;
+    padding:9px 15px;font-size:13px;cursor:pointer}
+  .btn:hover{border-color:#3b5aa8}
+  /* layout */
+  .split{display:grid;grid-template-columns:1.15fr .85fr;gap:26px}
+  @media (max-width:900px){.split{grid-template-columns:1fr}}
+  svg{display:block;width:100%;height:auto}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--dim);margin-top:10px}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+  /* bars */
+  .row{display:grid;grid-template-columns:92px 1fr 60px;gap:10px;align-items:center;margin:8px 0}
+  .row .lb{font-size:13px;color:var(--dim)}
+  .track{display:block;height:12px;border-radius:8px;background:#111a30;overflow:hidden}
+  .fill{display:block;height:100%;border-radius:8px;transition:width .22s ease}
+  .row .pc{text-align:right;font-family:var(--mono);font-size:12px;color:var(--dim)}
+  .railrow{display:grid;grid-template-columns:92px 1fr 64px;gap:10px;align-items:center;margin:9px 0}
+  .rail{display:block;height:12px;position:relative;background:#111a30;border-radius:8px}
+  .rail .one{position:absolute;top:-5px;bottom:-5px;width:1px;
+    background:repeating-linear-gradient(180deg,#f2903c 0 5px,transparent 5px 10px)}
+  .rail .mark{position:absolute;top:50%;width:13px;height:13px;border-radius:50%;transform:translate(-50%,-50%);transition:left .2s}
+  .rail .base{position:absolute;top:50%;width:7px;height:7px;border-radius:50%;transform:translate(-50%,-50%);opacity:.45}
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:18px}
+  .stat{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:rgba(10,17,33,.6)}
+  .stat .k{font-size:12px;color:var(--dim2)}
+  .stat .v{font-size:20px;font-weight:750;margin-top:2px;font-variant-numeric:tabular-nums}
+  .hint{color:var(--dim2);font-size:12.5px;margin-top:14px}
+  /* heatmap */
+  .heat{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;max-width:430px}
+  .cell{aspect-ratio:1;border-radius:7px;display:flex;align-items:center;justify-content:center;
+    font-family:var(--mono);font-size:11px;color:#eaf1ff;border:1px solid rgba(255,255,255,.05)}
+  .heat-lab{display:flex;justify-content:space-between;font-size:11px;color:var(--dim2);margin-top:6px}
+  /* reproduce strip */
+  .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+  .step{border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:rgba(10,17,33,.55);font-size:12.5px}
+  .step span{color:var(--mint);font-weight:700;margin-right:6px}
+  footer{padding:46px 0 66px;border-top:1px solid #16203a;margin-top:30px;color:var(--dim2);font-size:13px}
+  .note{border-left:2px solid var(--mint);padding-left:14px;color:var(--dim);font-size:13.5px;margin-top:10px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <span class="tag"><i></i>东北林业大学《随机过程》课程大作业 · 授课教师 艾晓辉</span>
+    <h1>把五级层级交给一条生灭过程</h1>
+    <p class="authors"><b>吴桐</b> · <b>赵睿</b> · <b>张文琦</b> · <b>吴梦豪</b></p>
+    <p class="sub">519 名学生的英语学习效率被聚成五级层级。层级不是标签，而是马尔可夫链的状态：向上跳的强度 λ 与向下跳的强度 μ 之比 ρ，就是"这个人正在变好还是变差"的量化。下面每一块都可以动手改参数，页面里的数字全部由 <code>数据/web_data.json</code> 现场重算。</p>
+  </div>
+</header>
+
+<main>
+<!-- ===== 01 演化沙盘 ===== -->
+<section>
+  <div class="wrap">
+    <div class="head"><span class="no">01 / EVOLVE</span><h2>让层级动起来</h2></div>
+    <p class="lead">选一个人所在的层级，拉时间轴，看他的层级分布怎样从一根针摊开成整条链。状态空间是五级（第 1 层最高效、第 5 层最低效），λ+μ = c = 2.54 周⁻¹。</p>
+    <div class="card">
+      <div class="ctlrow">
+        <div class="ctl"><label>起始层级</label><div class="chips" id="startChips"></div></div>
+        <div class="ctl"><label>情景</label><div class="seg" id="scnSeg">
+          <button data-s="base" class="on">现状</button><button data-s="opt">最优策略 +1.5 h/周</button></div></div>
+        <div class="ctl" style="flex:1;min-width:260px"><label>时间 <span class="val" id="tVal">16.0 周</span></label>
+          <input type="range" id="tRange" min="0" max="16" step="0.25" value="16" /></div>
+        <div><button class="btn" id="play">▶ 播放</button></div>
+      </div>
+      <div class="split">
+        <div>
+          <svg id="chartEvo" viewBox="0 0 560 300" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="legend" id="legendEvo"></div>
+        </div>
+        <div>
+          <div id="evoRows"></div>
+          <div class="stats" id="evoStats"></div>
+        </div>
+      </div>
+      <p class="hint">曲线是该起点在 t 时刻的层级分布 p<sub>k</sub>(t)；竖线是当前时刻。混合时间约 8.7–9.3 周——过了这个点，起点的信息基本被抹掉。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 02 动作实验室 ===== -->
+<section>
+  <div class="wrap">
+    <div class="head"><span class="no">02 / INTERVENE</span><h2>动作实验室：改一个旋钮，重估 519 个人</h2></div>
+    <p class="lead">选一种动作、给一个每周学时，页面会用协变量系数 δ 把 519 位学生的标准化协变量整体平移，重算每个人的 ρ，再聚合成五层强度比与 16 周转移矩阵。</p>
+    <div class="card">
+      <div class="ctlrow">
+        <div class="ctl"><label>动作</label><select id="actSel"></select></div>
+        <div class="ctl" style="flex:1;min-width:250px"><label>每周投入 <span class="val" id="hVal">1.5 h</span></label>
+          <input type="range" id="hRange" min="0" max="4" step="0.25" value="1.5" /></div>
+        <div class="ctl"><label>基准线</label><div class="mono" style="color:var(--dim)">灰点 = 不干预时的 ρ</div></div>
+      </div>
+      <div class="split">
+        <div id="actRails"></div>
+        <div>
+          <div style="font-size:13px;color:var(--dim);margin-bottom:8px">16 周转移矩阵 P(16)，行=起点、列=终点</div>
+          <div class="heat" id="heat"></div>
+          <div class="heat-lab"><span>第 1 层（最高效）</span><span>第 5 层（最低效）</span></div>
+        </div>
+      </div>
+      <div class="stats" id="actStats"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 03 个体视角 ===== -->
+<section>
+  <div class="wrap">
+    <div class="head"><span class="no">03 / ONE STUDENT</span><h2>看一个人：S480 的 16 周</h2></div>
+    <p class="lead">换一个学生，曲线就是他"已经离开原层级"的累积概率。虚线是他所在层级的平均水平——同一个链，个体差异只来自一个 ρ。</p>
+    <div class="card">
+      <div class="ctlrow">
+        <div class="ctl"><label>学生</label><select id="stuSel"></select></div>
+        <div class="ctl"><label>动作情景</label><div class="seg" id="stuScn">
+          <button data-s="base" class="on">不干预</button><button data-s="opt">最优策略</button></div></div>
+        <div class="ctl" style="flex:1"><label>&nbsp;</label><div class="mono" id="stuInfo" style="color:var(--dim)"></div></div>
+      </div>
+      <svg id="chartStu" viewBox="0 0 700 280" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="legend"><span><i style="background:#6c92ff"></i>个体</span><span><i style="background:#4fd1a5"></i>同层均值</span><span><i style="background:#f2903c"></i>跃层概率 50% 参考线</span></div>
+      <div class="stats" id="stuStats"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 04 全样本 ρ ===== -->
+<section>
+  <div class="wrap">
+    <div class="head"><span class="no">04 / POPULATION</span><h2>519 个 ρ 的形状</h2></div>
+    <p class="lead">点一层筛选，直方图会实时只统计那一层的 519 个个体之一部分；勾选动作后按该动作重算。竖线 ρ = 1：左边的人正在往低层级漂，右边的人在往上走。</p>
+    <div class="card">
+      <div class="ctlrow">
+        <div class="ctl"><label>层级筛选</label><div class="chips" id="histChips"></div></div>
+        <div class="ctl"><label>重算口径</label><div class="seg" id="histScn">
+          <button data-s="base" class="on">原始 ρ</button><button data-s="opt">施加当前动作</button></div></div>
+      </div>
+      <div id="hist" style="display:flex;align-items:flex-end;gap:3px;height:180px;position:relative"></div>
+      <div class="heat-lab"><span id="histLo"></span><span>ρ</span><span id="histHi"></span></div>
+      <div class="stats" id="histStats"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 05 复现 ===== -->
+<section>
+  <div class="wrap">
+    <div class="head"><span class="no">05 / REPRODUCE</span><h2>这些数字能被重跑出来</h2></div>
+    <p class="lead">六个 R 脚本在 R 4.6.0 上从头执行全部 exit 0；<code>数据/</code> 下的结果文件重跑后与入库版本逐字节一致，种子 20261121 全流程锁定。</p>
+    <div class="strip" id="strip"></div>
+    <p class="note">数据是「标定重建」：原文未公开问卷，本文以 n=519、5 类、S480 效率 0.6771、单步 25.38% / 累计 43.97% 为锚点构造同构数据；结构性结论属「复现成立」，数值性结论属「在锚点约束下成立」。</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    论文（个人版 / 团队版）与代码：<a href="https://github.com/ttbr5145/learning-efficiency-ctmc" target="_blank" rel="noopener">learning-efficiency-ctmc</a> ·
+    同门作业：<a href="/markov/" target="_blank" rel="noopener">图上随机游走 · MovieLens</a><br>
+    数据与原文（Zhao et al., <i>ESWA</i> 211 (2023) 118535）版权归原作者，仅用于课程学习。
+  </div>
+</footer>
+
+<script>
+const D = @@JSON@@;
+const c = D.meta.c, TH = D.chain.theta_bar;
+const NAMES = ["第 1 层","第 2 层","第 3 层","第 4 层","第 5 层"];
+const COLORS = ["#6c92ff","#4fd1a5","#f2c14e","#f2903c","#d4637c"];
+const fmt = (x,d=2)=>Number(x).toFixed(d);
+const STUD = D.students, ACT = D.actions, CV = D.covary;
+const A0 = D.meta.alpha, DEL = CV.delta;
+
+/* ---------- 链构造与一致化 ---------- */
+const zeros = () => Array.from({length:5},()=>Array(5).fill(0));
+function buildQ(rv){
+  const Q = zeros();
+  for(let k=0;k<5;k++){
+    const lam = rv[k]*c/(1+rv[k]), mu = c - lam;
+    if(k>0) Q[k][k-1] = lam;
+    if(k<4) Q[k][k+1] = mu;
+    Q[k][k] = -((k>0?lam:0)+(k<4?mu:0));
+  }
+  return Q;
+}
+function pt(rv, t, start){
+  const Q = buildQ(rv), R = zeros();
+  for(let i=0;i<5;i++) for(let j=0;j<5;j++) R[i][j] = (i===j?1:0)+Q[i][j]/c;
+  const ct = c*t, N = Math.ceil(ct + 8*Math.sqrt(ct+1) + 30);
+  let w = Math.exp(-ct), M = Array.from({length:5},(_,i)=>Array.from({length:5},(_,j)=>i===j?1:0));
+  const out = [0,0,0,0,0];
+  for(let n=0;n<=N;n++){
+    for(let j=0;j<5;j++) out[j] += w*M[start][j];
+    const Nx = zeros();
+    for(let i=0;i<5;i++) for(let j=0;j<5;j++){
+      let s=0; for(let k=0;k<5;k++) s += M[i][k]*R[k][j];
+      Nx[i][j]=s;
+    }
+    M = Nx; w = w*ct/(n+1);
+  }
+  const sum = out.reduce((a,b)=>a+b,0);
+  return out.map(v=>Math.max(v,0)/sum);
+}
+const expEff = p => p.reduce((s,v,i)=>s+v*TH[i],0);
+const upProb = (p,s) => p.slice(0,s).reduce((a,b)=>a+b,0);
+
+/* ---------- 个体 rho 的四则运算 ---------- */
+function zOf(st){ return [st.z1,st.z2,st.z3,st.z4,st.z5]; }
+function rhoOf(st, dz, f){
+  let lin = A0;
+  const z = zOf(st);
+  for(let j=0;j<5;j++) lin += DEL[j]*(z[j] + f*(dz?dz[j]:0));
+  return Math.exp(lin);
+}
+function layerMean(dz, f){
+  const acc=[0,0,0,0,0], cnt=[0,0,0,0,0];
+  for(const st of STUD){ const r = rhoOf(st,dz,f); const k = st.layer-1; acc[k]+=r; cnt[k]++; }
+  return acc.map((v,i)=>v/cnt[i]);
+}
+const layerMeanBase = layerMean(null, 0);
+// 剂量 = 实际投入 / 该动作的建议学时；投入等于建议学时 ≡ 论文里的「施加该动作」
+const doseOf = hv => ACT[actIdx].hours ? hv / ACT[actIdx].hours : 0;
+
+/* ---------- SVG 折线图 ---------- */
+function linePath(pts, x0, y0, w, h, xmax, ymax){
+  return "M" + pts.map(([x,y])=>`${(x0 + (x/xmax)*w).toFixed(1)},${(y0 + h - (y/ymax)*h).toFixed(1)}`).join(" L");
+}
+function drawEvo(){
+  const start = evoStart, rv = evoScenario === "opt" ? D.rho.layer_mean_opt : D.rho.layer_mean;
+  const xs = []; for(let t=0;t<=16.001;t+=0.5) xs.push(t);
+  const series = [0,1,2,3,4].map(k=>({k, pts: xs.map(t=>[t, pt(rv,t,start)[k]])}));
+  const W=560,H=300, x0=44, y0=16, w=486, hh=236, ymax=0.7;
+  let out = `<rect x="${x0}" y="${y0}" width="${w}" height="${hh}" fill="#0b1426" stroke="#1d2a46"/>`;
+  for(let g=0;g<=0.7;g+=0.1){
+    const y = y0 + hh - (g/ymax)*hh;
+    out += `<line x1="${x0}" y1="${y}" x2="${x0+w}" y2="${y}" stroke="#18223a"/>`;
+    out += `<text x="${x0-8}" y="${y+4}" fill="#6d7da2" font-size="10" text-anchor="end" font-family="monospace">${g.toFixed(1)}</text>`;
+  }
+  for(let t=0;t<=16;t+=4){
+    const x = x0 + (t/16)*w;
+    out += `<text x="${x}" y="${y0+hh+16}" fill="#6d7da2" font-size="10" text-anchor="middle" font-family="monospace">${t}</text>`;
+  }
+  series.forEach(s=>{ out += `<path d="${linePath(s.pts,x0,y0,w,hh,16,ymax)}" fill="none" stroke="${COLORS[s.k]}" stroke-width="2.2"/>`; });
+  const xNow = x0 + (tNow/16)*w;
+  out += `<line x1="${xNow}" y1="${y0}" x2="${xNow}" y2="${y0+hh}" stroke="#ffffff44" stroke-dasharray="3 3"/>`;
+  out += `<text x="${(x0+w)/2}" y="${y0+hh+34}" fill="#95a5c9" font-size="11" text-anchor="middle">时间 t（周）</text>`;
+  document.getElementById("chartEvo").innerHTML = out;
+  document.getElementById("legendEvo").innerHTML =
+    NAMES.map((n,i)=>`<span><i style="background:${COLORS[i]}"></i>${n}</span>`).join("");
+}
+
+/* ---------- 01 状态 ---------- */
+let evoStart = 4, evoScenario = "base", tNow = 16, playing = false;
+const startChips = document.getElementById("startChips");
+startChips.innerHTML = NAMES.map((n,i)=>`<button class="chipbtn${i===4?" on":""}" data-k="${i}">${n}</button>`).join("");
+startChips.addEventListener("click", e=>{
+  if(e.target.tagName!=="BUTTON") return;
+  evoStart = +e.target.dataset.k;
+  [...startChips.children].forEach(b=>b.classList.toggle("on", b===e.target));
+  renderEvo();
+});
+document.getElementById("scnSeg").addEventListener("click", e=>{
+  if(e.target.tagName!=="BUTTON") return;
+  evoScenario = e.target.dataset.s;
+  [...e.currentTarget.children].forEach(b=>b.classList.toggle("on", b===e.target));
+  renderEvo();
+});
+const tRange = document.getElementById("tRange");
+tRange.addEventListener("input", e=>{ tNow = +e.target.value; renderEvo(); });
+function renderEvo(){
+  document.getElementById("tVal").textContent = fmt(tNow,1)+" 周";
+  drawEvo();
+  const rv = evoScenario === "opt" ? D.rho.layer_mean_opt : D.rho.layer_mean;
+  const p = pt(rv, tNow, evoStart);
+  document.getElementById("evoRows").innerHTML = p.map((v,i)=>
+    `<div class="row"><span class="lb">${NAMES[i]}</span>
+      <span class="track"><span class="fill" style="width:${(v*100).toFixed(1)}%;background:linear-gradient(90deg,${COLORS[i]}cc,${COLORS[i]})"></span></span>
+      <span class="pc">${(v*100).toFixed(1)}%</span></div>`).join("");
+  document.getElementById("evoStats").innerHTML = `
+    <div class="stat"><div class="k">期望效率 θ</div><div class="v">${fmt(expEff(p),4)}</div></div>
+    <div class="stat"><div class="k">仍在原层级</div><div class="v">${(p[evoStart]*100).toFixed(1)}%</div></div>
+    <div class="stat"><div class="k">已到更高层级</div><div class="v">${(upProb(p,evoStart)*100).toFixed(1)}%</div></div>`;
+}
+document.getElementById("play").addEventListener("click", e=>{
+  playing = !playing;
+  e.target.textContent = playing ? "❚❚ 暂停" : "▶ 播放";
+  if(!playing) return;
+  const step = ()=>{
+    if(!playing) return;
+    tNow = tNow >= 16 ? 0 : Math.min(16, tNow + 0.25);
+    tRange.value = tNow; renderEvo();
+    setTimeout(step, 60);
+  };
+  step();
+});
+renderEvo();
+
+/* ---------- 02 动作实验室 ---------- */
+const actSel = document.getElementById("actSel");
+actSel.innerHTML = ACT.map((a,i)=>`<option value="${i}">${a.name}（建议 ${a.hours} h/周）</option>`).join("");
+actSel.value = 4;
+let actIdx = 4, actH = 1.5;
+const posOf = r => Math.max(0, Math.min(100, ((r-0.4)/1.2)*100));
+function renderAct(){
+  const dz = ACT[actIdx].dz;
+  const rv = layerMean(dz, doseOf(actH));
+  document.getElementById("actRails").innerHTML = rv.map((r,i)=>
+    `<div class="railrow"><span class="lb">${NAMES[i]}</span>
+      <span class="rail"><span class="one" style="left:${posOf(1)}%"></span>
+        <span class="base" style="left:${posOf(layerMeanBase[i])}%;background:${COLORS[i]}"></span>
+        <span class="mark" style="left:${posOf(r)}%;background:${COLORS[i]};box-shadow:0 0 12px ${COLORS[i]}"></span></span>
+      <span class="pc">${fmt(r,3)}</span></div>`).join("");
+  // 热图：以第 5 层为起点的整条 P(16) 也给出 5 行
+  let cells = "";
+  for(let i=0;i<5;i++){
+    const p = pt(rv,16,i);
+    for(let j=0;j<5;j++){
+      const v = p[j], a = Math.min(1, 0.12 + v*1.6);
+      cells += `<div class="cell" title="从第 ${i+1} 层到第 ${j+1} 层：${(v*100).toFixed(1)}%"
+        style="background:rgba(108,146,255,${a.toFixed(2)})">${(v*100).toFixed(0)}</div>`;
+    }
+  }
+  document.getElementById("heat").innerHTML = cells;
+  const p5 = pt(rv,16,4);
+  const meanR = rv.reduce((a,b)=>a+b,0)/5;
+  const dRho = rv.map((r,i)=>r-layerMeanBase[i]);
+  document.getElementById("actStats").innerHTML = `
+    <div class="stat"><div class="k">五层平均 ρ</div><div class="v">${fmt(meanR,3)} <span style="font-size:12px;color:var(--dim)">基线 ${fmt(layerMeanBase.reduce((a,b)=>a+b,0)/5,3)}</span></div></div>
+    <div class="stat"><div class="k">第 5 层 16 周跃层</div><div class="v">${(upProb(p5,4)*100).toFixed(1)}%</div></div>
+    <div class="stat"><div class="k">第 5 层期望效率</div><div class="v">${fmt(expEff(p5),4)}</div></div>
+    <div class="stat"><div class="k">ρ 增量（1→5 层）</div><div class="v" style="font-size:15px">${dRho.map(x=>(x>=0?"+":"")+fmt(x,2)).join(" · ")}</div></div>`;
+}
+actSel.addEventListener("change", e=>{ actIdx = +e.target.value; renderAct(); });
+document.getElementById("hRange").addEventListener("input", e=>{
+  actH = +e.target.value;
+  document.getElementById("hVal").textContent = fmt(actH,1)+" h";
+  renderAct(); syncHist();
+});
+document.getElementById("hVal").textContent = "1.5 h";
+renderAct();
+
+/* ---------- 03 个体视角 ---------- */
+const stuSel = document.getElementById("stuSel");
+const presets = STUD.filter(s=>[480,1,2,3,17,88,200,317,455].includes(s.id));
+stuSel.innerHTML = presets.map(s=>`<option value="${s.id}">${"S"+s.id} · 第 ${s.layer} 层 · ρ ${fmt(s.rho,3)}</option>`).join("");
+stuSel.value = "480";
+let stuScn = "base";
+document.getElementById("stuScn").addEventListener("click", e=>{
+  if(e.target.tagName!=="BUTTON") return;
+  stuScn = e.target.dataset.s;
+  [...e.currentTarget.children].forEach(b=>b.classList.toggle("on", b===e.target));
+  renderStu();
+});
+function renderStu(){
+  const st = STUD.find(s=>s.id === +stuSel.value) || STUD[0];
+  const dz = ACT[actIdx].dz, h = stuScn === "opt" ? actH : 0;
+  const rho = rhoOf(st, dz, stuScn === "opt" ? doseOf(actH) : 0);
+  const start = st.layer-1;
+  const pts=[], ptsA=[];
+  for(let t=0;t<=32.001;t+=0.5){
+    pts.push([t, upProb(pt([rho,rho,rho,rho,rho], t, start), start)]);
+    const la = layerMean(dz, stuScn === "opt" ? doseOf(actH) : 0)[start];
+    ptsA.push([t, upProb(pt([la,la,la,la,la], t, start), start)]);
+  }
+  const W=700,H=280,x0=52,y0=16,w=614,hh=214;
+  let out = `<rect x="${x0}" y="${y0}" width="${w}" height="${hh}" fill="#0b1426" stroke="#1d2a46"/>`;
+  for(let g=0;g<=1.001;g+=0.25){
+    const y = y0+hh-(g/1)*hh;
+    out += `<line x1="${x0}" y1="${y}" x2="${x0+w}" y2="${y}" stroke="#18223a"/>
+      <text x="${x0-8}" y="${y+4}" fill="#6d7da2" font-size="10" text-anchor="end" font-family="monospace">${(g*100).toFixed(0)}%</text>`;
+  }
+  for(let t=0;t<=32;t+=8){
+    const x = x0+(t/32)*w;
+    out += `<text x="${x}" y="${y0+hh+16}" fill="#6d7da2" font-size="10" text-anchor="middle" font-family="monospace">${t}</text>`;
+  }
+  out += `<line x1="${x0}" y1="${y0+hh*0.5}" x2="${x0+w}" y2="${y0+hh*0.5}" stroke="#f2903c66" stroke-dasharray="4 4"/>`;
+  out += `<path d="${linePath(ptsA,x0,y0,w,hh,32,1)}" fill="none" stroke="#4fd1a5" stroke-width="1.6" stroke-dasharray="5 4"/>`;
+  out += `<path d="${linePath(pts,x0,y0,w,hh,32,1)}" fill="none" stroke="#6c92ff" stroke-width="2.4"/>`;
+  const x16 = x0+(16/32)*w;
+  out += `<line x1="${x16}" y1="${y0}" x2="${x16}" y2="${y0+hh}" stroke="#ffffff33" stroke-dasharray="3 3"/>
+    <text x="${x16-6}" y="${y0+14}" fill="#95a5c9" font-size="10" text-anchor="end" font-family="monospace">16 周</text>
+    <text x="${x0+w/2}" y="${y0+hh+34}" fill="#95a5c9" font-size="11" text-anchor="middle">时间 t（周）</text>`;
+  document.getElementById("chartStu").innerHTML = out;
+  const p16 = pt([rho,rho,rho,rho,rho], 16, start);
+  document.getElementById("stuInfo").textContent =
+    `${"S"+st.id} · ${NAMES[start]} · ρ = ${fmt(rho,3)} · θ = ${fmt(st.theta,3)} · 成绩 ${fmt(st.score,0)}`;
+  document.getElementById("stuStats").innerHTML = `
+    <div class="stat"><div class="k">16 周离开原层级</div><div class="v">${(upProb(p16,start)*100).toFixed(1)}%</div></div>
+    <div class="stat"><div class="k">16 周期望效率</div><div class="v">${fmt(expEff(p16),4)}</div></div>
+    <div class="stat"><div class="k">ρ 与同层均值</div><div class="v">${fmt(rho,3)} / ${fmt(layerMeanBase[start],3)}</div></div>`;
+}
+stuSel.addEventListener("change", renderStu);
+renderStu();
+
+/* ---------- 04 直方图 ---------- */
+let histLayer = 0, histMode = "base";   // histLayer: 0=全部, 1..5
+const histChips = document.getElementById("histChips");
+histChips.innerHTML = `<button class="chipbtn on" data-k="0">全部</button>` +
+  NAMES.map((n,i)=>`<button class="chipbtn" data-k="${i+1}">${n}</button>`).join("");
+histChips.addEventListener("click", e=>{
+  if(e.target.tagName!=="BUTTON") return;
+  histLayer = +e.target.dataset.k;
+  [...histChips.children].forEach(b=>b.classList.toggle("on", b===e.target));
+  syncHist();
+});
+document.getElementById("histScn").addEventListener("click", e=>{
+  if(e.target.tagName!=="BUTTON") return;
+  histMode = e.target.dataset.s;
+  [...e.currentTarget.children].forEach(b=>b.classList.toggle("on", b===e.target));
+  syncHist();
+});
+function syncHist(){
+  const dz = histMode === "opt" ? ACT[actIdx].dz : null;
+  const f = histMode === "opt" ? doseOf(actH) : 0;
+  const vals = STUD.filter(s=>!histLayer || s.layer===histLayer).map(s=>rhoOf(s, dz, f));
+  const lo = 0.35, hi = 1.45, B = 22, step = (hi-lo)/B;
+  const bins = Array(B).fill(0);
+  vals.forEach(v=>{ const i = Math.max(0, Math.min(B-1, Math.floor((v-lo)/step))); bins[i]++; });
+  const mx = Math.max(...bins, 1);
+  document.getElementById("hist").innerHTML = bins.map((v,i)=>{
+    const a = lo+i*step, b = a+step;
+    const col = (a+b)/2 > 1 ? "linear-gradient(180deg,#4fd1a5,#2b7f68)" : "linear-gradient(180deg,#6c92ff,#3f5ba8)";
+    return `<div class="hb" title="${a.toFixed(2)}–${b.toFixed(2)}：${v} 人" style="flex:1;height:${Math.max(2,(v/mx)*100)}%;background:${col};border-radius:3px 3px 0 0"></div>`;
+  }).join("") + `<div style="position:absolute;top:-6px;bottom:0;left:${((1-lo)/(hi-lo))*100}%;width:1px;background:#f2903c">
+      <span style="position:absolute;top:-16px;left:4px;font-size:11px;color:#f2903c;white-space:nowrap">ρ = 1</span></div>`;
+  document.getElementById("histLo").textContent = lo.toFixed(2);
+  document.getElementById("histHi").textContent = hi.toFixed(2);
+  const med = ([...vals].sort((a,b)=>a-b)[Math.floor(vals.length/2)]);
+  document.getElementById("histStats").innerHTML = `
+    <div class="stat"><div class="k">样本数</div><div class="v">${vals.length}</div></div>
+    <div class="stat"><div class="k">中位数</div><div class="v">${fmt(med,3)}</div></div>
+    <div class="stat"><div class="k">ρ &lt; 1 比例</div><div class="v">${(vals.filter(v=>v<1).length/vals.length*100).toFixed(1)}%</div></div>
+    <div class="stat"><div class="k">均值</div><div class="v">${fmt(vals.reduce((a,b)=>a+b,0)/vals.length,3)}</div></div>`;
+}
+syncHist();
+
+/* ---------- 05 strip ---------- */
+document.getElementById("strip").innerHTML = ["01 数据重建","02 CHPI 复现","03 生灭过程","04 插图","05 结果汇总","06 教材校验","07 网页导出"]
+  .map(s=>`<div class="step"><span>✓</span>${s}</div>`).join("");
+</script>
+</body>
+</html>
+
+
+
+

@@ -1,4 +1,4 @@
-# ---- LaTeX 编译中间产物（main.pdf 为成品，保留入库）----
+# ---- LaTeX 编译中间产物（paper_solo.pdf / paper_team.pdf 为成品，保留入库）----
 *.aux
 *.log
 *.out
