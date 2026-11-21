@@ -7,7 +7,7 @@
 #    (3) 调和函数与鞅停时定理互验首达期望（Ch6.2）
 #    (4) Brown 运动反射原理、最大值与反正弦律（Ch7.5）
 #    (5) Itô 公式给出的 OU 闭式解、方差与平稳分布（Ch8.3–8.4）
-#  输出：data/textbook_checks.txt、data/textbook_table.csv
+#  输出：数据/textbook_checks.txt、数据/textbook_table.csv
 # =============================================================================
 
 suppressPackageStartupMessages({
@@ -16,10 +16,10 @@ suppressPackageStartupMessages({
 
 # 仓库根目录：优先环境变量 PROJ_ROOT，其次当前工作目录（应在仓库根），最后回退本机默认路径
 root <- Sys.getenv("PROJ_ROOT", unset = getwd())
-if (!file.exists(file.path(root, "code", "dea_fun.R"))) root <- "D:/AI/随机过程大作业2"
+if (!file.exists(file.path(root, "代码", "dea_fun.R"))) root <- "D:/AI/随机过程大作业2"
 setwd(root)
 
-sp <- readRDS(file.path(root, "data", "sp_results.rds"))
+sp <- readRDS(file.path(root, "数据", "sp_results.rds"))
 d  <- sp$dat
 cc <- sp$c_scale
 K  <- 5
@@ -154,7 +154,7 @@ P_mc_1   <- ou_mc(1)
 sd_eff   <- sig480 * sqrt((1 - exp(-2 * kap * 16)) / (2 * kap))
 
 # ---- 输出 -------------------------------------------------------------------
-sink("data/textbook_checks.txt")
+sink(file.path(root, "数据", "textbook_checks.txt"))
 cat("=== 1. 谱隙与混合时间（Ch5.3） ===\n")
 print(spec_tab, digits = 5)
 cat("\n=== 2. Poisson 一致化（Ch3） ===\n")
@@ -183,6 +183,6 @@ cat("\n=== 5. Itô 闭式解与方差（Ch8） ===\n")
 print(var_tab, digits = 4)
 sink()
 
-write.csv(spec_tab, file.path(root, "data", "textbook_table.csv"), row.names = FALSE, fileEncoding = "UTF-8")
+write.csv(spec_tab, file.path(root, "数据", "textbook_table.csv"), row.names = FALSE, fileEncoding = "UTF-8")
 cat("textbook checks done\n")
 

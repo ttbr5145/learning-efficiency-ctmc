@@ -8,15 +8,15 @@
 ###############################################################################
 # 仓库根目录：优先环境变量 PROJ_ROOT，其次当前工作目录（应在仓库根），最后回退本机默认路径
 root <- Sys.getenv("PROJ_ROOT", unset = getwd())
-if (!file.exists(file.path(root, "code", "dea_fun.R"))) root <- "D:/AI/随机过程大作业2"
+if (!file.exists(file.path(root, "代码", "dea_fun.R"))) root <- "D:/AI/随机过程大作业2"
 setwd(root)
-source(file.path(root, "code", "dea_fun.R"))
+source(file.path(root, "代码", "dea_fun.R"))
 suppressPackageStartupMessages({library(cluster); library(showtext); library(ggplot2); library(lpSolve)})
 showtext_auto()
 font_add("SimSun", "C:/Windows/Fonts/simsun.ttc")
 font_add("SimHei", "C:/Windows/Fonts/simhei.ttf")
 
-dat <- read.csv(file.path(root, "data", "learning_data.csv"))
+dat <- read.csv(file.path(root, "数据", "learning_data.csv"))
 item_names <- c("interest", "revision", "examtimes", "onspot", "mental", "rest",
                 "tutoring", "mocktest", "reciting", "listening", "speaking",
                 "reading", "extracur", "abroad")
@@ -28,7 +28,7 @@ n <- nrow(dat)
 gower <- daisy(dat[, item_names], metric = "gower")
 sil <- sapply(3:8, function(k) pam(gower, k = k, diss = TRUE)$silinfo$avg.width)
 sil_tab <- data.frame(k = 3:8, silhouette = round(sil, 4))
-write.csv(sil_tab, file.path(root, "data", "silhouette.csv"), row.names = FALSE)
+write.csv(sil_tab, file.path(root, "数据", "silhouette.csv"), row.names = FALSE)
 
 k_best <- 5
 set.seed(20261121)
@@ -170,10 +170,10 @@ saveRDS(list(dat = dat, X = X, Y = Y, clus = clus, level = level,
              repro = repro, sil_tab = sil_tab, k_best = k_best,
              r_eff_score = r_eff_score, pam_agree = pam_agree, fit = fit,
              cluster_true = dat$cluster_true),
-        file.path(root, "data", "chpi_results.rds"))
-write.csv(dat, file.path(root, "data", "chpi_students.csv"), row.names = FALSE)
-write.csv(tab4, file.path(root, "data", "layer4_cluster5.csv"), row.names = FALSE)
-write.csv(path_tab, file.path(root, "data", "path_s480.csv"), row.names = FALSE)
+        file.path(root, "数据", "chpi_results.rds"))
+write.csv(dat, file.path(root, "数据", "chpi_students.csv"), row.names = FALSE)
+write.csv(tab4, file.path(root, "数据", "layer4_cluster5.csv"), row.names = FALSE)
+write.csv(path_tab, file.path(root, "数据", "path_s480.csv"), row.names = FALSE)
 
 cat("轮廓宽度:\n"); print(sil_tab)
 cat("聚类一致率:", round(pam_agree, 4), "\n")

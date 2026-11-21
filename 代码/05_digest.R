@@ -3,11 +3,11 @@
 ###############################################################################
 # 仓库根目录：优先环境变量 PROJ_ROOT，其次当前工作目录（应在仓库根），最后回退本机默认路径
 root <- Sys.getenv("PROJ_ROOT", unset = getwd())
-if (!file.exists(file.path(root, "code", "dea_fun.R"))) root <- "D:/AI/随机过程大作业2"
+if (!file.exists(file.path(root, "代码", "dea_fun.R"))) root <- "D:/AI/随机过程大作业2"
 setwd(root)
 options(width = 200, digits = 6)
-res <- readRDS(file.path(root, "data", "chpi_results.rds"))
-sp  <- readRDS(file.path(root, "data", "sp_results.rds"))
+res <- readRDS(file.path(root, "数据", "chpi_results.rds"))
+sp  <- readRDS(file.path(root, "数据", "sp_results.rds"))
 cat("=== names(res) ===\n"); print(names(res))
 cat("=== names(sp) ===\n");  print(names(sp))
 

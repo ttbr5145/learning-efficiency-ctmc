@@ -6,9 +6,9 @@
 set.seed(20261121)
 # 仓库根目录：优先环境变量 PROJ_ROOT，其次当前工作目录（应在仓库根），最后回退本机默认路径
 root <- Sys.getenv("PROJ_ROOT", unset = getwd())
-if (!file.exists(file.path(root, "code", "dea_fun.R"))) root <- "D:/AI/随机过程大作业2"
+if (!file.exists(file.path(root, "代码", "dea_fun.R"))) root <- "D:/AI/随机过程大作业2"
 setwd(root)
-source(file.path(root, "code", "dea_fun.R"))
+source(file.path(root, "代码", "dea_fun.R"))
 
 n <- 519
 item_names <- c("interest", "revision", "examtimes", "onspot", "mental", "rest",
@@ -114,8 +114,8 @@ cat("校准后 S480 成绩 =", round(score[idx480], 2), "\n")
 dat <- data.frame(id = 1:n, cluster_true = cluster_true, item_score,
                   x1 = x1, x2 = x2, x3 = x3, x4 = x4,
                   score = round(score, 2), e = e_i)
-write.csv(dat, file.path(root, "data", "learning_data.csv"), row.names = FALSE)
-write.csv(quant_example, file.path(root, "data", "quant_example.csv"), row.names = FALSE)
+write.csv(dat, file.path(root, "数据", "learning_data.csv"), row.names = FALSE)
+write.csv(quant_example, file.path(root, "数据", "quant_example.csv"), row.names = FALSE)
 
 cat("n =", n, " 各类：", paste(tabulate(cluster_true), collapse = " / "), "\n")
 cat("成绩均值", round(mean(score), 2), " 范围", round(range(score), 2),

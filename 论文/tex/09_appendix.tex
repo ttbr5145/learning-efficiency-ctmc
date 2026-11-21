@@ -155,16 +155,16 @@ $\dd f=\bigl(f_t+\kappa(\theta^{*}-\theta_t)f_x\bigr)\dd t+\sigma f_x\,\dd W_t$
 \toprule
 文件 & 作用 \\
 \midrule
-\texttt{main.tex} & 论文主文件，XeLaTeX 编译入口 \\
-\texttt{tex/*.tex} & 各章节与封面、摘要、参考文献、附录 \\
-\texttt{code/01\_recon\_data.R} & 标定数据重建（固定种子 20261121） \\
-\texttt{code/02\_chpi.R} & 量化、PAM-Gower、CCR-DEA、分层、三准则与路径 \\
-\texttt{code/03\_stochastic.R} & 生灭过程 MLE、首达时间、Gillespie、OU、策略优化 \\
-\texttt{code/04\_figures.R} & 生成 9 幅插图（PNG，300 dpi） \\
-\texttt{code/06\_textbook.R} & 谱隙、一致化、鞅、反射原理、Itô 与 OU 模拟的校验 \\
-\texttt{code/dea\_fun.R} & DEA 线性规划工具函数 \\
-\texttt{data/*.csv, *.rds} & 中间数据与结果（含 \texttt{chpi\_log.txt}、\texttt{sp\_log.txt}） \\
-\texttt{figures/*.png} & 论文插图 \\
+\texttt{论文/main.tex} & 论文主文件，XeLaTeX 编译入口 \\
+\texttt{论文/tex/*.tex} & 各章节与封面、摘要、参考文献、附录 \\
+\texttt{代码/01\_recon\_data.R} & 标定数据重建（固定种子 20261121） \\
+\texttt{代码/02\_chpi.R} & 量化、PAM-Gower、CCR-DEA、分层、三准则与路径 \\
+\texttt{代码/03\_stochastic.R} & 生灭过程 MLE、首达时间、Gillespie、OU、策略优化 \\
+\texttt{代码/04\_figures.R} & 生成 9 幅插图（PNG，300 dpi） \\
+\texttt{代码/06\_textbook.R} & 谱隙、一致化、鞅、反射原理、Itô 与 OU 模拟的校验 \\
+\texttt{代码/dea\_fun.R} & DEA 线性规划工具函数 \\
+\texttt{数据/*.csv, *.rds} & 中间数据与结果（含 \texttt{chpi\_log.txt}、\texttt{sp\_log.txt}） \\
+\texttt{论文/fig/*.png} & 论文插图 \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -172,7 +172,7 @@ $\dd f=\bigl(f_t+\kappa(\theta^{*}-\theta_t)f_x\bigr)\dd t+\sigma f_x\,\dd W_t$
 复现顺序为 \texttt{01}$\to$\texttt{02}$\to$\texttt{03}$\to$\texttt{04}，之后
 可用 \texttt{06\_textbook.R} 核对正文各项推导对应的全部数字（谱隙、一致化
 误差、调和函数、反射原理与 OU 模拟），
-每一步都会把结果写入 \texttt{data/} 并打印关键数值，便于逐项核对。论文编译
+每一步都会把结果写入 \texttt{数据/} 并打印关键数值，便于逐项核对。论文编译
 在 TeXworks 中把编译引擎选为 XeLaTeX，连续编译两遍（第一遍生成目录与交叉
 引用，第二遍定稿），或直接执行
 \texttt{latexmk -xelatex main.tex}。所有随机过程均由固定种子控制，重跑结果

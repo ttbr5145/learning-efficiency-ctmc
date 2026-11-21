@@ -3,19 +3,19 @@
 ###############################################################################
 # 仓库根目录：优先环境变量 PROJ_ROOT，其次当前工作目录（应在仓库根），最后回退本机默认路径
 root <- Sys.getenv("PROJ_ROOT", unset = getwd())
-if (!file.exists(file.path(root, "code", "dea_fun.R"))) root <- "D:/AI/随机过程大作业2"
+if (!file.exists(file.path(root, "代码", "dea_fun.R"))) root <- "D:/AI/随机过程大作业2"
 setwd(root)
 suppressPackageStartupMessages({library(showtext); library(Matrix)})
 showtext_auto(); showtext_opts(dpi = 300)
 font_add("SimSun", "C:/Windows/Fonts/simsun.ttc")
 font_add("SimHei", "C:/Windows/Fonts/simhei.ttf")
 
-res <- readRDS(file.path(root, "data", "chpi_results.rds"))
-sp <- readRDS(file.path(root, "data", "sp_results.rds"))
+res <- readRDS(file.path(root, "数据", "chpi_results.rds"))
+sp <- readRDS(file.path(root, "数据", "sp_results.rds"))
 dat <- res$dat; clus <- dat$clus; theta <- dat$theta; level <- dat$level
 
 openfig <- function(name, w, h) {
-  png(file.path(root, "figures", paste0(name, ".png")), width = w, height = h,
+  png(file.path(root, "论文", "fig", paste0(name, ".png")), width = w, height = h,
       units = "in", res = 300, type = "cairo", family = "SimSun")
   par(family = "SimSun", las = 1)
 }

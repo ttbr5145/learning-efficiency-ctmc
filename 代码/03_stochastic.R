@@ -3,10 +3,10 @@
 ###############################################################################
 # 仓库根目录：优先环境变量 PROJ_ROOT，其次当前工作目录（应在仓库根），最后回退本机默认路径
 root <- Sys.getenv("PROJ_ROOT", unset = getwd())
-if (!file.exists(file.path(root, "code", "dea_fun.R"))) root <- "D:/AI/随机过程大作业2"
+if (!file.exists(file.path(root, "代码", "dea_fun.R"))) root <- "D:/AI/随机过程大作业2"
 setwd(root)
 suppressPackageStartupMessages({library(Matrix); library(numDeriv)})
-res <- readRDS(file.path(root, "data", "chpi_results.rds"))
+res <- readRDS(file.path(root, "数据", "chpi_results.rds"))
 dat <- res$dat
 n <- nrow(dat)
 s <- dat$level; theta <- dat$theta; clus <- dat$clus
@@ -266,9 +266,9 @@ saveRDS(list(dat = dat, z = z, z_raw = z_raw, alpha = alpha, delta = delta, se =
              par_tab = par_tab, share_drift_down = share_drift_down,
              ref = ref, rho_ref = rho_ref, P_ref = P_ref, ET_ref = ET_ref,
              hours_ref = hours_ref, cov_cn = cov_cn, mu_c = mu_c),
-        file.path(root, "data", "sp_results.rds"))
-write.csv(dat, file.path(root, "data", "sp_students.csv"), row.names = FALSE)
-write.csv(mc_rows, file.path(root, "data", "mc_check.csv"), row.names = FALSE)
+        file.path(root, "数据", "sp_results.rds"))
+write.csv(dat, file.path(root, "数据", "sp_students.csv"), row.names = FALSE)
+write.csv(mc_rows, file.path(root, "数据", "mc_check.csv"), row.names = FALSE)
 
 cat("alpha =", round(alpha, 3), "  delta =", paste(round(delta, 3), collapse = ", "), "\n")
 cat("se =", paste(round(se, 3), collapse = ", "), "\n")
