@@ -176,7 +176,7 @@
 <section>
   <div class="wrap">
     <div class="head"><span class="no">03 / ONE STUDENT</span><h2>看一个人：S480 的 16 周</h2></div>
-    <p class="lead">选一个学生：左边是「不干预」，右边是 02 里那个动作与投入。两张图共用 0–100% 的纵轴，拖动时间轴或点播放，同一条曲线的高度差就是这一动作对他个人的效果；绿色虚线是不干预时的同层均值。</p>
+    <p class="lead">选一个学生：左边是「不干预」，右边是 02 里那个动作与投入。两张图共用 0–100% 的纵轴，拖动时间轴或点播放，同一条曲线的高度差就是这一动作对他个人的效果；绿色虚线是各自情景下的同层均值（左边不干预、右边施加动作后重算）。</p>
     <div class="card">
       <div class="ctlrow">
         <div class="ctl"><label>学生</label><select id="stuSel"></select></div>
@@ -199,7 +199,7 @@
         </div>
       </div>
       <p class="hint" id="stuWarn" style="display:none;color:#f2c14e"></p>
-      <div class="legend"><span><i style="background:#6c92ff"></i>个体累积曲线</span><span><i style="background:#4fd1a5"></i>同层均值（不干预）</span><span><i style="background:#f2903c"></i>50% 参考线</span></div>
+      <div class="legend"><span><i style="background:#6c92ff"></i>个体累积曲线</span><span><i style="background:#4fd1a5"></i>同层均值（各自情景）</span><span><i style="background:#f2903c"></i>50% 参考线</span></div>
       <div class="stats" id="stuStats"></div>
     </div>
   </div>
@@ -7500,11 +7500,12 @@ function renderStu(){
   const start = st.layer-1;
   const rhoB = st.rho, rhoA = rhoOf(st, dz, f);
   const lamB = layerMeanBase[start], lamA = layerMean(dz, f)[start];
-  const serB=[], serA=[], serLam=[];
+  const serB=[], serA=[], serLam=[], serLamA=[];
   for(let t=0;t<=16.001;t+=0.5){
     serB.push([t, upProb(pt([rhoB,rhoB,rhoB,rhoB,rhoB], t, start), start)]);
     serA.push([t, upProb(pt([rhoA,rhoA,rhoA,rhoA,rhoA], t, start), start)]);
     serLam.push([t, upProb(pt([lamB,lamB,lamB,lamB,lamB], t, start), start)]);
+    serLamA.push([t, upProb(pt([lamA,lamA,lamA,lamA,lamA], t, start), start)]);
   }
   document.getElementById("stuT").textContent = fmt(stuT,1)+" 周";
   const zero = f < 0.02;   // 投入 0 h ⇒ 与不干预同一条链，必须明说
@@ -7516,7 +7517,7 @@ function renderStu(){
   if(zero) warn.textContent =
     `02 里的每周投入现在是 0 h，等于没有施加动作，所以左右两条曲线必然重合。回到 02 把投入拉到该动作的建议学时（${ACT[actIdx].hours} h/周）再比较。`;
   const vA = drawStuPanel("chartStuA", serB, serLam, stuT, start);
-  const vB = drawStuPanel("chartStuB", serA, null, stuT, start);
+  const vB = drawStuPanel("chartStuB", serA, serLamA, stuT, start);
   document.getElementById("valA").textContent = (vA*100).toFixed(1)+"%";
   document.getElementById("valB").textContent = (vB*100).toFixed(1)+"%";
   const p16B = pt([rhoB,rhoB,rhoB,rhoB,rhoB], 16, start);
@@ -7597,6 +7598,7 @@ syncHist();
 </script>
 </body>
 </html>
+
 
 
 
