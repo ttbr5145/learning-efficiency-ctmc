@@ -148,6 +148,10 @@ python 代码\build_web.py
 | 团队成员 | 吴桐、赵睿、张文琦、吴梦豪（2024 级） |
 | 论文版本 | 个人版 `论文/paper_solo.pdf`、团队版 `论文/paper_team.pdf` |
 
+## 许可证
+
+按内容类型双许可，详见 [`LICENSE`](LICENSE)：`代码/` 下全部脚本为 **MIT**；论文、插图、网页与说明文字为 **CC BY-NC 4.0**（署名「吴桐、赵睿、张文琦、吴梦豪」、非商业、相同方式共享）。第三方原文与重建数据的边界见 `LICENSE` 第 3 节。
+
 ## 参考文献
 
 1. Charnes A, Cooper W W, Rhodes E. Measuring the efficiency of decision making units. *EJOR*, 1978.
